@@ -1,1 +1,1 @@
-# dizzy-home
+# smart-dizzy-home
