@@ -166,3 +166,5 @@ raspy_scripts/dataset
 raspy_scripts/model
 # No push old
 raspy_scripts/old
+
+*/.DS_Store
