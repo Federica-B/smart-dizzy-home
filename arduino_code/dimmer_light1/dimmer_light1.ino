@@ -1,42 +1,19 @@
-/*
+#include <EEPROM.h>
 
-  Dimmer
 
-  Demonstrates sending data from the computer to the Arduino board, in this case
+const int ledPin = 10;      // the pin that the LED is attached to
 
-  to control the brightness of an LED. The data is sent in individual bytes,
+int brightness_max = 255;
 
-  each of which ranges from 0 to 255. Arduino reads these bytes and uses them to
+int brightness_min = 0;   //Variable to store data read from EEPROM.
 
-  set the brightness of the LED.
-
-  The circuit:
-
-  - LED attached from digital pin 9 to ground.
-
-  - Serial connection to Processing, Max/MSP, or another serial application
-
-  created 2006
-
-  by David A. Mellis
-
-  modified 30 Aug 2011
-
-  by Tom Igoe and Scott Fitzgerald
-
-  This example code is in the public domain.
-
-  http://www.arduino.cchttps://www.arduino.cc/en/Tutorial/Dimmer
-
-*/
-
-const int ledPin = 9;      // the pin that the LED is attached to
-
-int brightness = 0;			// initialize value 
+int brightness = brightness_max;   // initialize value 
 
 void setup() {
-
-  // initialize the serial communication:
+  int eeAddress = 0;
+  EEPROM.get(eeAddress, brightness_min);
+  brightness_min = 20; // maybe change value in eeprom lowering
+  // initialize the serial communication
 
   Serial.begin(9600);
 
@@ -46,26 +23,24 @@ void setup() {
 }
 
 void loop() {
-
+  analogWrite(ledPin, brightness);
 
   // check if data has been sent from the computer:
 
   if (Serial.available()>0) {
 
-    // read the most recent byte (which will be from 0 to 255):
+    int data = Serial.parseInt();
 
-    brightness = Serial.parseInt();	 // da vedere perché ho fatto parseInt dato che con questa seriale possono mandare solo ascii
-    // da vedere se nella seriale normale si possono mandare byte 
-    Serial.print("Numero inserito: ");
-    Serial.println(brightness, BIN);
+    if(data == 1 || data == 0){ // read stress no stress
+      if (data == 1){
+        brightness = brightness_min;
+        }else{
+          brightness = brightness_max;}
+         
+      }else{
+        //Serial.print("No valid value")
+       }
     
-    if(brightness > -1 && brightness < 256){
-      Serial.print("Numero approvato: ");
-      Serial.println(brightness, BIN);
-       // set the brightness of the LED:
-      analogWrite(ledPin, brightness);
-    }
 
   }
 }
-
