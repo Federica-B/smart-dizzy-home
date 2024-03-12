@@ -1,0 +1,18 @@
+#!/bin/bash
+
+echo ":) Start simulation iot-project-dizzy-home"
+
+val=$(usb-devices | grep -c UNO)
+
+if [ $val==3 ]; then
+echo "Right number of Arduino connected"
+
+echo "Start the ML_sub script"
+./ML_sub.py &
+echo "Start the read_and_publish script"
+./read_and_publish.py
+else
+echo "Not all Arduino connected"
+fi
+
+
