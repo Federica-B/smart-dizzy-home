@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import csv
 import json
 import random
@@ -64,19 +65,18 @@ def read_and_send_csv(file_path, client):
                 print(f"Message published successfully to {topic}")
             else:
                 print(f"Failed to publish message to {topic}")
-            print(f"Sent: {senml_message}")
-            time.sleep(2)
+           # print(f"Sent: {senml_message}")
+            time.sleep(5)
 
 
 if __name__ == "__main__":
     # MQTT Client setup
-    client = mqtt.Client()
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
     client.on_connect = on_connect
     client.connect(broker_address, port)
 
     # Replace 'path_to_your_ecg_data.csv' with the actual path to your CSV file
-    # TODO: change path
-    csv_file_path = '/Users/olivia1/Desktop/ING/1° ANNO/1° SEM/IOT/Iot_project/dataset/5_15_7_vb.csv'
+    csv_file_path = 'database/5_15_7_vb.csv'
 
     client.loop_start()
     read_and_send_csv(csv_file_path, client)

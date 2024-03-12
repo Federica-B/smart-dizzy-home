@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import paho.mqtt.client as mqtt
 import json
 import joblib
@@ -11,13 +12,16 @@ port = 1883
 topic = "data/ecg-eda"
 
 # Setup Arduino port
-arduino_serial = serial.Serial('/dev/ttyACM0', 9600)  # Su Linux/Mac
+arduino_serial_acmzero = serial.Serial('/dev/ttyACM0', 9600)  # Su Linux/Mac
+arduino_serial_acmone = serial.Serial('/dev/ttyACM1', 9600)
+arduino_serial_acmtwo = serial.Serial('/dev/ttyACM2', 9600)
+
 # arduino_port = "COM3"  # Su Windows
 
 # Upload model + scaler pretrained
-# TODO: change path
-clf = joblib.load('/Users/olivia1/Desktop/ING/1° ANNO/1° SEM/IOT/Iot_project/model/random_forest_model.pkl')
-scaler = joblib.load('/Users/olivia1/Desktop/ING/1° ANNO/1° SEM/IOT/Iot_project/model/scaler.pkl')
+
+clf = joblib.load('model/random_forest_model.pkl')
+scaler = joblib.load('model/scaler.pkl')
 
 
 def on_connect(client, userdata, flags, rc):
@@ -53,7 +57,11 @@ def send_data(data):
     """
     Invia i dati alla porta seriale per Arduino.
     """
-    arduino_serial.write(data.encode())  # Invia il dato come stringa codificata in bytes
+    arduino_serial_acmzero.write(data.encode())  # Invia il dato come stringa codificata in bytes
+    time.sleep(0.1)
+    arduino_serial_acmone.write(data.encode())
+    time.sleep(0.1)
+    arduino_serial_acmtwo.write(data.encode())
     time.sleep(0.1)
 
 
@@ -77,7 +85,7 @@ def on_message(client, userdata, msg):
     send_data(prediction_label)
 
 
-client = mqtt.Client()
+client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
 client.on_connect = on_connect
 client.connect(broker_address, port, 60)
 client.on_message = on_message
