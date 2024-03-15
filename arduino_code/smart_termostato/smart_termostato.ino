@@ -9,7 +9,6 @@ float tempGradi;
 float temperaturaMassima;
 int sensorVal;
 int currentStateServo;
-
  
 LiquidCrystal lcd(12, 11, 5, 4, 3, 2); //pin display LCD
  
@@ -21,6 +20,7 @@ void setup()
   pinMode(ledBlu, OUTPUT);
   pinMode(ledRosso, OUTPUT);
   pinMode(rele,OUTPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(rele,LOW);
   analogReference(EXTERNAL);
   currentStateServo = 0; // normal temperature
@@ -41,13 +41,27 @@ void loop()
         delay(10);
       }
     sensorVal /= 10; //esegue la media dei 10 valori letti
+
     tempGradi = ((sensorVal * 0.0032)-0.50) / 0.01;
   	int futureStateServo;
   	futureStateServo = currentStateServo;
-  
-  
+  	
+  	//Serial.println(tempGradi);
+
+    
   	if (Serial.available() > 0) {
       int data = Serial.parseInt();
+
+      if(data == 2){
+        Serial.println(tempGradi);
+      }
+
+      //debugging purpose
+      if(data == 1){
+        digitalWrite(LED_BUILTIN,HIGH);
+        }else{
+          digitalWrite(LED_BUILTIN,LOW);}
+        
       lcd.setCursor(0,0);
       lcd.print("Temperatura:"); // scrive sul display la parola "temperatura"
       lcd.setCursor(0,2); // sposta il cursore sulla seconda linea
@@ -58,8 +72,8 @@ void loop()
       // CASE 0: stress non detected
       if(data == 0 && currentStateServo == 0)
       {
-        Serial.println(data);
-      	Serial.println(currentStateServo);
+        //Serial.println(data);
+      	//Serial.println(currentStateServo);
         lcd.setCursor(0,0);
       	lcd.print("Temperatura:"); //scrive sul display la parola "temperatura"
       	lcd.setCursor(0,2); //sposta il cursore sulla seconda linea
@@ -75,8 +89,8 @@ void loop()
       // CASE 1: // stress detected --> change temperature 
       if(data == 1 && currentStateServo == 0) 
       {
-        Serial.println(data);
-        Serial.println(currentStateServo);
+        //Serial.println(data);
+        //Serial.println(currentStateServo);
         if(tempGradi <= 16) { // suppongo che sia inverno --> aumento
         	temperaturaMassima = tempGradi + 4; //aumento di 4 gradi
        		lcd.clear();
@@ -105,8 +119,8 @@ void loop()
      // CASE 2: stress detected & temp changed --> hold
       if(data == 1 && currentStateServo == 1) 
       {
-	  	Serial.println(data);
-      	Serial.println(currentStateServo);
+	  	//Serial.println(data);
+      	//Serial.println(currentStateServo);
       	lcd.setCursor(0,0);
       	lcd.print("Temp updated:"); //scrive sul display la parola "temperatura"
       	lcd.setCursor(0,2); //sposta il cursore sulla seconda linea
@@ -121,8 +135,8 @@ void loop()
      // CASE 3: stress non detected & temp changed --> set normal temp
      if(data == 0 && currentStateServo == 1) // stress non detected: open windows
      {
-     	Serial.println(data);
-      	Serial.println(currentStateServo);
+     	//Serial.println(data);
+      	//Serial.println(currentStateServo);
       	lcd.setCursor(0,0);
       	lcd.print("Temperatura:"); //scrive sul display la parola "temperatura"
       	lcd.setCursor(0,2); //sposta il cursore sulla seconda linea
@@ -134,8 +148,12 @@ void loop()
         digitalWrite(ledRosso, LOW);
     }
 
+        
+
   //output
   currentStateServo = futureStateServo;
+
+
   }
-      
+
 }
