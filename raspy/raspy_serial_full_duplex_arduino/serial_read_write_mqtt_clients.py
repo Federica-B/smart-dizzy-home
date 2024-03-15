@@ -134,6 +134,7 @@ def temperature_mqtt_task():
                 
                 if len(acquired_data)>1:
                     acquired_data = acquired_data.split('\n')[0]
+                    acquired_data = acquired_data[:-1]
                     print("The data from port: "+ str(telemetry_acm_arduino) + " is: " + str(acquired_data))
                     client.publish(topic_telemetry, acquired_data)
                     print("Data published on topic: "+ str(topic_telemetry))
