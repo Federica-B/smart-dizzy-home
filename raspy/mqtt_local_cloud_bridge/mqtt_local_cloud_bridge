@@ -1,0 +1,62 @@
+#!/usr/bin/env python3
+
+import paho.mqtt.client as mqtt
+
+# Setup local MQTT
+l_broker_address = "127.0.0.1"
+l_port = 1883
+l_topic_ecg = "data/ecg-eda"
+l_topic_stress = "data/stress"
+l_topic_telemetry = "telemetry/temperature"
+
+# Setup cloud MQTT
+c_broker_address = "mqtt.thingsboard.cloud"
+c_port = 1883
+c_base_topic = "v1/devices/me/telemetry"
+c_token = "Nv0BnfBCxNsmvvI3QApU"
+
+def c_on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("Connected to MQTT Broker!")
+    else:
+        print(f"Failed to connect, return code {rc}")
+
+def c_on_publish(client, userdata, flags):
+    print("published on cloud :P")
+
+c_client =  mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, "cloud-mqtt")
+c_client.on_connect = c_on_connect
+c_client.on_publish = c_on_publish
+
+c_client.username_pw_set(c_token)
+c_client.connect(host=c_broker_address,port=c_port,keepalive=60)
+
+
+
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("Connected to MQTT Broker!")
+        client.subscribe("#")
+    else:
+        print(f"Failed to connect, return code {rc}")
+
+def on_message(client, userdata, msg):
+    topic = msg.topic.split('/')[-1]
+    message = msg.payload.decode()
+    concatenate_cloud_msg = '{'+ str(topic)+ ':'+ str(message) +'}'
+    print(concatenate_cloud_msg)
+    c_client.publish(c_base_topic,concatenate_cloud_msg)
+
+
+
+def main():
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, "client-local")
+    client.on_connect = on_connect
+    client.connect(l_broker_address, l_port, 60)
+    client.on_message = on_message
+
+    client.loop_forever()
+
+
+if __name__ == "__main__":
+    main()
