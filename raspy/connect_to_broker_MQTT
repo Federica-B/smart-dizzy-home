@@ -1,0 +1,8 @@
+Terminale
+1) cd Download/mosquitto-broker
+2) ./start.sh
+
+Settings:
+broker_address = "127.0.0.1"
+port = 1884
+topic = "data/ecg-eda"
