@@ -13,7 +13,7 @@ port = 1883
 topic = "data/stress"
 topic_telemetry = "telemetry/temperature"
 
-telemetry_acm_arduino = '/dev/ttyACM0'
+telemetry_acm_arduino = ['/dev/ttyACM0']
 arduino_list_serial = []
 simp =threading.Semaphore(1)
 
@@ -52,7 +52,7 @@ def task_mqtt_stress():
             print("Connected with result code " + str(rc))
             client.subscribe(topic)
         else:
-            print("Failed to connect, return conde "+ src(rc))
+            print("Failed to connect, return conde "+ str(rc))
 
     def on_message(client, userdata, msg):
         print("New msg arrive from topic: "+ str(topic)+ "!")
@@ -111,29 +111,31 @@ def temperature_mqtt_task():
     ## data initilization for telemetry
     acquired_data = ""
     while True:
-        print("Start serial communication with arduino! - Data read")
         for ser_arduino in arduino_list_serial:
-            if ser_arduino != 0:
+            if ser_arduino != 0 and ser_arduino.port in telemetry_acm_arduino:
+                print("Start serial communication with arduino! - Data read")
                 simp.acquire()
-                if ser_arduino.port == telemetry_acm_arduino:
-                    try:
-                        acquired_data = ser_arduino.read_until().decode('utf-8')  # Invia il dato come stringa codificata in bytes
-                        time.sleep(0.1)
-                    except serial.SerialException as e:
-                        print("Something went wrong when communicating with arduino serial! - NO DATA IS READ ON THE SERIAL PORT!!!!!!")
-                        print(e)
-                        return 0
-                    except TypeError as e:
-                        print("Other stuff went wrong in the arduino communication")
-                        print(e)
-                        return 0
-                    else:
-                        print("End correclty serial communication with arduino" + str(ser_arduino.name))
+                try:
+                    acquired_data = ser_arduino.read_until().decode('utf-8')  # Invia il dato come stringa codificata in bytes
+                    time.sleep(0.1)
+                except serial.SerialException as e:
+                    print("Something went wrong when communicating with arduino serial! - NO DATA IS READ ON THE SERIAL PORT!!!!!!")
+                    print(e)
+                    return 0
+                except TypeError as e:
+                    print("Other stuff went wrong in the arduino communication")
+                    print(e)
+                    return 0
+                else:
+                    print("End correclty serial communication with arduino" + str(ser_arduino.name))
                 simp.release()
-        acquired_data = acquired_data.split('\n')[0]
-        print("The data from port: "+ str(telemetry_acm_arduino) + " is: " + str(acquired_data))
-        client.publish(topic_telemetry, acquired_data)
-        print("Data published on topic: "+ str(topic_telemetry))
+                
+                if acquired_data != 0:
+                    acquired_data = acquired_data.split('\n')[0]
+                    print("The data from port: "+ str(telemetry_acm_arduino) + " is: " + str(acquired_data))
+                    client.publish(topic_telemetry, acquired_data)
+                    print("Data published on topic: "+ str(topic_telemetry))
+                    
         time.sleep(10)
 
 
