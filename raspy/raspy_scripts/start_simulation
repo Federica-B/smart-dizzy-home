@@ -11,6 +11,8 @@ echo "Start the ML_sub script"
 ./ML_sub.py &
 echo "Start the read_and_publish script"
 ./read_and_publish.py
+echo "Start the Mqtt local-cloud bridge"
+./raspy/mqtt_local_cloud_bridge/mqtt_local_cloud_bridge
 else
 echo "Not all Arduino connected"
 fi

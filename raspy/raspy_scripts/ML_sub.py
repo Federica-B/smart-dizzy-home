@@ -10,18 +10,12 @@ import time
 broker_address = "127.0.0.1"
 port = 1883
 topic = "data/ecg-eda"
-
-# Setup Arduino port
-arduino_serial_acmzero = serial.Serial('/dev/ttyACM0', 9600)  # Su Linux/Mac
-arduino_serial_acmone = serial.Serial('/dev/ttyACM1', 9600)
-arduino_serial_acmtwo = serial.Serial('/dev/ttyACM2', 9600)
-
-# arduino_port = "COM3"  # Su Windows
+topic_stress = "data/stress"
 
 # Upload model + scaler pretrained
 
-clf = joblib.load('model/random_forest_model.pkl')
-scaler = joblib.load('model/scaler.pkl')
+clf = joblib.load('raspy/model/random_forest_model.pkl')
+scaler = joblib.load('raspy/model/scaler.pkl')
 
 
 def on_connect(client, userdata, flags, rc):
@@ -52,18 +46,6 @@ def senml_to_features(senml_string):
         print(f"Error decoding JSON: {e}")
         return []
 
-################# FUNZIONE PER MENDARE A SERIALE ####################
-def send_data(data):
-    """
-    Invia i dati alla porta seriale per Arduino.
-    """
-    arduino_serial_acmzero.write(data.encode())  # Invia il dato come stringa codificata in bytes
-    time.sleep(0.1)
-    arduino_serial_acmone.write(data.encode())
-    time.sleep(0.1)
-    arduino_serial_acmtwo.write(data.encode())
-    time.sleep(0.1)
-
 
 def on_message(client, userdata, msg):
     print("Messaggio ricevuto")
@@ -81,8 +63,9 @@ def on_message(client, userdata, msg):
     prediction_label = '1' if prediction[0] == 1 else '0'
     print(f"Prediction: {prediction_label}")
 
-    # INVIO DATI A SERIALE --> teoricamente si può fare con pin out e ricezione invece sensing della temperatura con seriale
-    send_data(prediction_label)
+    ## send on mqtt the prediction
+    client.publish(topic_stress,prediction_label)
+    print("Publish on topic: /"+ str(topic_stress)+ " value: "+ str(prediction_label))
 
 
 client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
