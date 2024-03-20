@@ -69,7 +69,7 @@ For every script in the directory [raspy_scripts](https://github.com/Federica-B/
 
 &emsp; ```mosquitto```
 
-### 4. Upload skatch on arduino and attach eletric component
+### 4. Upload sketch on Arduino and attach electrical component
 In the [arduino_code](https://github.com/Federica-B/smart-dizzy-home/tree/main/arduino_code) directory, you can find all the sketches. You can also use only one Arduino, however, please note that the polling feature is only implemented in the [thermostat](https://github.com/Federica-B/smart-dizzy-home/blob/main/arduino_code/smart_termostato/smart_termostato.ino). It is recommended to test at least with this sketch.
 
 The eletronic components need are the following:
@@ -88,7 +88,7 @@ The GPIO configuration of the 3 Arduino is shown in this following images.
 
 After completing the sketch upload, connect the Arduino to the Raspberry Pi via USB. If necessary, provide power using the appropriate cable. Begin by connecting the Arduino with the thermostat sketch. Alternatively, manually modify update the variable list ```telemetry_acm_arduino``` with the appropriate ttyACM port in this [script](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_serial_full_duplex_arduino/serial_read_write_mqtt_clients.py).
 
-### 5. Check if the Arduinos are correctly connected
+### 5. Check if the Arduino are correctly connected
 Check if the Raspberry Pi detects the Arduino correctly by using the following command.
 ```
 dmesg | grep tty ACM
@@ -98,6 +98,7 @@ Alternatively, you can view all the attached USB devices and their information w
 usb-devices
  ```
 ### 6. Start the script
+#### &emsp; 6.1 Lunching script singularly
 I recommend launching the scripts individually in separate terminals to observe each script's output in an organized manner.
 ```
 cd smart-dizzy-home/raspy/raspy_scripts
@@ -120,7 +121,20 @@ Ctrl+Alt+T
 ./read_and_publish.py
 ```
 <!-- new terminal from command line xterm -->
-## Trubleshooting
+#### &emsp; 6.1 Launching all script together
+If you don't have 3 Arduino connected see section Troubleshooting.
+
+By launching the bash script you can start all the python scripts together.
+```
+cd smart-dizzy-home/raspy/raspy_scripts
+./start_simulation 
+```
+To kill all python process launched you can use the following bash script.
+```
+./stop_simulation 
+```
+
+## Troubleshooting
 - If you encounter the problem of Line Feed (LF) after moving files from Windows to Unix you can use the folling command to resolve this issue:
 ```
 dos2unix [options] [file-name]
