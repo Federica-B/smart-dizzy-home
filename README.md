@@ -49,13 +49,36 @@ For MQTT to function locally, you need an **MQTT broker** operating within your 
 To enable the dashboard functionality, you must possess a **Thingboard** cloud license and obtain the token for the cloud MQTT broker. You will need to update the token within the [mqtt_local_cloud_bridge](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/mqtt_local_cloud_bridge/mqtt_local_cloud_bridge) file, specifically in the ```c_token``` variable. If you don't have a cloud license, you can download the Community Edition and adjust the script accordingly to test the repository.
 
 ## How to use this repo
+### 1. Clone the repo
+You can clone the repository both in you desktop and Raspberry Pi or only in your desktop. If you chose the second option you can use ```scp``` to move the ```raspy``` directory in your Raspberry Pi using the following comand. Make sure you have ```ssh``` enable on your Raspberry Pi.
+
+```scp -r ./smart-dizzy-home/raspy/ remote_username@10.10.0.2:/remote/directory ```
+
+### 2. Add execute privileges
+For every script in the directory [raspy_scripts](https://github.com/Federica-B/smart-dizzy-home/tree/main/raspy/raspy_scripts) you need to add execution privilages.
+
+```chmod +x [file-name]```
+
+### 3. Make sure you have the MQTT broker up and running 
+#### &emsp; 3.1 Il you are using Docker, type the following and see if it is running.
+
+&emsp; ```sudo doker ps```
+
+#### &emsp; 3.2 If you have installed locally mosquitto broker, type the following and see if it is running.
+
+&emsp; ```mosquitto```
+
+### 4. Start the script
+I suggest starting the scripts on for terminal to see each script output in a organized way.
+```cd smart-dizzy-home/raspy/raspy_scripts
+ ```
 
 ## Trubleshooting
-- If you encounter the problem of Line Feed after moving files from Windows to Unix you can use the folling command to resolve this issue:
+- If you encounter the problem of Line Feed (LF) after moving files from Windows to Unix you can use the folling command to resolve this issue:
 ```
 dos2unix [options] [file-name]
 ```
-- If you do not possess three Arduinos, or if the Arduino models do not contain 'UNO' in their names, the bash script [start_simulation](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_scripts/start_simulation) will not function. You can start the singular scrips manually.
+- If you do not possess three Arduinos, or if the Arduino models do not contain 'UNO' in their names, the bash script [start_simulation](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_scripts/start_simulation) will not function. You can start the singular scripts manually.
 
 ## Future work
 - [ ] Implement functionality to modify Arduino's actuation logic via serial communication by deploying a function that allows rewriting values of variables used in the actuation process. - configuration function
