@@ -14,8 +14,8 @@ topic_stress = "data/stress"
 
 # Upload model + scaler pretrained
 
-clf = joblib.load('raspy/model/random_forest_model.pkl')
-scaler = joblib.load('raspy/model/scaler.pkl')
+clf = joblib.load('model/random_forest_model.pkl')
+scaler = joblib.load('model/scaler.pkl')
 
 
 def on_connect(client, userdata, flags, rc):

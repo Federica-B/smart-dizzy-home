@@ -76,7 +76,7 @@ if __name__ == "__main__":
     client.connect(broker_address, port)
 
     # Replace 'path_to_your_ecg_data.csv' with the actual path to your CSV file
-    csv_file_path = 'raspy/dataset/5_15_7_vb.csv'
+    csv_file_path = 'dataset/5_15_7_vb.csv'
 
     client.loop_start()
     read_and_send_csv(csv_file_path, client)
