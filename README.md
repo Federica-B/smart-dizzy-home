@@ -9,14 +9,23 @@ Our project aims to develop an IoT architecture that dynamically adjusts to the 
 for the dashboard we used the cloud version of [Thingsboard](https://thingsboard.io/).
 
 ## Architecture structure
-We believe this architecture can be scalable across various settings, such as homes, vehicles or offices, where different types of actuation can occur in response to stress. The key concept is that in each location, there's an Edge Device responsible for:
-- locally performing the ML inference
-- sending the stress values to the microcontroller, which in turn carries out specific actuations
+### Main take away of this architecture
+The core values of our architecture include scalability across diverse settings such as homes, vehicles, or offices, as well as independence from cloud reliance.
+The key concept is that in each location, there's an Edge Device responsible for:
+- locally performing the ML inference;
+- sending the stress values to the microcontroller, which in turn carries out specific actuations;
 - and bridges this collected data with the cloud.
-This data can be displayed and made visible to potential caregivers, thereby integrating it into the IoT data lifecycle.
 
-A simulated biometric device transmits biometric data via Bluetooth to an Edge Device (in our case simulated by the Raspberry Pi). This data is then sent to an appropriate local topic _data/ecg-eda_ managed by the local MQTT broker. Upon publishing, this data is received by a module that performs Machine Learning inference. The results are then sent to another local topic _data/stress_. This data is then utilized by another module responsible for serial communication with the Arduino, which emulates devices capable of being actuated. In our scenario, these devices include a light, a shutter, and a thermostat. At the same time another module is responsable for performinf polling to request specific values from the actuator. This value is also sent to another local MQTT topic. In the end another module subscribes to all local topics, formats the data, and then sends it to the cloud MQTT broker. The data received from the cloud is displayed on the Thingsboard dashboard.
+This data can be displayed and made visible to potential caregivers, thereby integrating it into the IoT data lifecycle. The cloud can introduce and enhance numerous additional features, yet this architecture is also capable of performing effectively as a standalone system.
 
+### A more in-depth explanation of the stack
+1. A simulated **biometric device** transmits biometric data via Bluetooth to an Edge Device. This data is then sent to an appropriate local topic _data/ecg-eda_ managed by the local MQTT broker.
+2. Upon publishing, this data is received by a module that **performs Machine Learning inference**. The results are then sent to another local topic _data/stress_.
+3. This data is then utilized by another module responsible for **serial communication** with the Arduino, which emulates devices capable of being actuated. In our scenario, these devices include a light, a shutter, and a thermostat.
+4. At the same time another module is responsable for **performinf polling** to request specific values from the actuators. This value is also sent to another local MQTT topic.
+5. In the end another module subscribes to all local topics, formats the data, and then **sends it to the cloud MQTT broker**. The data received from the cloud is displayed on the Thingsboard dashboard.
+
+### Current issues and future work
 In this architecture, the actuation logic is embedded within the microcontroller's code. For example, it regulates the intensity of the dimmer light based on specific variable values stored within the code. The serial communication merely conveys predicted stress or non-stress data. We've designed the architecture to allow future adjustments in device logic. This can be achieved through functions that modify variable values stored in the EEPROM memory. Similarly, we've considered the potential for updating the machine learning model via a REST API. This involves regularly querying the cloud to check for any new models available for download and use.
 
 ### INSERT IMAGE OF THE ARCHITECTURE
@@ -37,7 +46,9 @@ The serial communication between Arduino and Raspberry Pi is established through
 
 For MQTT to function locally, you need an **MQTT broker** operating within your local network. In our setup, we utilize a Docker container to host our local MQTT broker. If you wish to replicate this setup, you can follow this [instructions](https://github.com/sukesh-ak/setup-mosquitto-with-docker). If the broker is not hosted on the machine where you deploy the Raspberry Pi scripts, you will need to modify the scripts by changing the IP address accordingly. Additionally, if your broker has authentication requirements, you must also incorporate them into the scripts.
 
-To enable the dashboard functionality, you must possess a **Thingboard** cloud license and obtain the token for the cloud MQTT broker. You will need to update the token within the [mqtt_local_cloud_bridge](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/mqtt_local_cloud_bridge/mqtt_local_cloud_bridge) file, specifically in the ```c_token``` variableThe token has to be changed in the file. If you don't have a cloud license, you can download the Community Edition and adjust the script accordingly to test the repository.
+To enable the dashboard functionality, you must possess a **Thingboard** cloud license and obtain the token for the cloud MQTT broker. You will need to update the token within the [mqtt_local_cloud_bridge](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/mqtt_local_cloud_bridge/mqtt_local_cloud_bridge) file, specifically in the ```c_token``` variable. If you don't have a cloud license, you can download the Community Edition and adjust the script accordingly to test the repository.
+
+## How to use this repo
 
 ## Trubleshooting
 - If you encounter the problem of Line Feed after moving files from Windows to Unix you can use the folling command to resolve this issue:
