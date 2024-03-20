@@ -47,7 +47,7 @@ The serial communication between Arduino and Raspberry Pi is established through
 
 For MQTT to function locally, you need an **MQTT broker** operating within your local network. In our setup, we utilize a Docker container to host our local MQTT broker. If you wish to replicate this setup, you can follow this [instructions](https://github.com/sukesh-ak/setup-mosquitto-with-docker). If the broker is not hosted on the machine where you deploy the Raspberry Pi scripts, you will need to modify the scripts by changing the IP address accordingly. Additionally, if your broker has authentication requirements, you must also incorporate them into the scripts.
 
-To enable the dashboard functionality, you must possess a **Thingboard** cloud license and obtain the token for the cloud MQTT broker. You will need to update the token within the [mqtt_local_cloud_bridge](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/mqtt_local_cloud_bridge/mqtt_local_cloud_bridge) file, specifically in the ```c_token``` variable. If you don't have a cloud license, you can download the Community Edition and adjust the script accordingly to test the repository.
+To enable the dashboard functionality, you must possess a **Thingboard** cloud license and obtain the token for the cloud MQTT broker. You will need to update the token within the [mqtt_local_cloud_bridge](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_scripts/mqtt_local_cloud_bridge/mqtt_local_cloud_bridge) file, specifically in the ```c_token``` variable. If you don't have a cloud license, you can download the Community Edition and adjust the script accordingly to test the repository.
 
 ## How to use this repository
 ### 1. Clone the repository
@@ -86,7 +86,7 @@ The GPIO configuration of the 3 Arduino is shown in this following images.
 
 # IMAGE NEEDED
 
-After completing the sketch upload, connect the Arduino to the Raspberry Pi via USB. If necessary, provide power using the appropriate cable. Begin by connecting the Arduino with the thermostat sketch. Alternatively, manually modify update the variable list ```telemetry_acm_arduino``` with the appropriate ttyACM port in this [script](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_serial_full_duplex_arduino/serial_read_write_mqtt_clients.py).
+After completing the sketch upload, connect the Arduino to the Raspberry Pi via USB. If necessary, provide power using the appropriate cable. Begin by connecting the Arduino with the thermostat sketch. Alternatively, manually modify update the variable list ```telemetry_acm_arduino``` with the appropriate ttyACM port in this [script](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_scripts/raspy_serial_full_duplex_arduino/serial_read_write_mqtt_clients.py).
 
 ### 5. Check if the Arduino are correctly connected
 Check if the Raspberry Pi detects the Arduino correctly by using the following command.
@@ -122,7 +122,7 @@ Ctrl+Alt+T
 ```
 <!-- new terminal from command line xterm -->
 #### &emsp; 6.1 Launching all script together
-If you don't have 3 Arduino connected see section Troubleshooting.
+If you don't have 3 Arduino connected see section [Troubleshooting](https://github.com/Federica-B/smart-dizzy-home/blob/main/README.md#troubleshooting).
 
 By launching the bash script you can start all the python scripts together.
 ```
