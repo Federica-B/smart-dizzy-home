@@ -4,7 +4,7 @@ echo ":) Start simulation iot-project-dizzy-home"
 
 val=$(usb-devices | grep -c UNO)
 
-if [ $val -eq 0 ]; then
+if [ $val -eq 3 ]; then
 echo "Right number of Arduino connected"
 
 echo "Start the ML_sub script"
