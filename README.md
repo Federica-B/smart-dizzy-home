@@ -91,7 +91,7 @@ After completing the sketch upload, connect the Arduino to the Raspberry Pi via 
 ### 5. Check if the Arduino are correctly connected
 Check if the Raspberry Pi detects the Arduino correctly by using the following command.
 ```
-dmesg | grep tty ACM
+dmesg | grep ttyACM
  ```
 Alternatively, you can view all the attached USB devices and their information with the following command.
   ```
