@@ -49,8 +49,8 @@ For MQTT to function locally, you need an **MQTT broker** operating within your 
 
 To enable the dashboard functionality, you must possess a **Thingboard** cloud license and obtain the token for the cloud MQTT broker. You will need to update the token within the [mqtt_local_cloud_bridge](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/mqtt_local_cloud_bridge/mqtt_local_cloud_bridge) file, specifically in the ```c_token``` variable. If you don't have a cloud license, you can download the Community Edition and adjust the script accordingly to test the repository.
 
-## How to use this repo
-### 1. Clone the repo
+## How to use this repository
+### 1. Clone the repository
 You can clone the repository both in you desktop and Raspberry Pi or only in your desktop. If you chose the second option you can use ```scp``` to move the ```raspy``` directory in your Raspberry Pi using the following comand. Make sure you have ```ssh``` enable on your Raspberry Pi.
 
 ```scp -r ./smart-dizzy-home/raspy/ remote_username@10.10.0.2:/remote/directory ```
@@ -83,6 +83,8 @@ The eletronic components need are the following:
     - 1 Thermistor
 
 The GPIO configuration of the 3 Arduino is shown in this following images.
+
+# IMAGE NEEDED
 
 After completing the sketch upload, connect the Arduino to the Raspberry Pi via USB. If necessary, provide power using the appropriate cable. Begin by connecting the Arduino with the thermostat sketch. Alternatively, manually modify update the variable list ```telemetry_acm_arduino``` with the appropriate ttyACM port in this [script](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_serial_full_duplex_arduino/serial_read_write_mqtt_clients.py).
 
