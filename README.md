@@ -33,7 +33,7 @@ In this architecture, the actuation logic is embedded within the microcontroller
 ## Requirements needed
 
   1. Arduino board (at least one)
-     - Refer to Section [4: Uploading Sketch to Arduino and connecting electronic components](https://github.com/Federica-B/smart-dizzy-home/blob/main/README.md#4-upload-skatch-on-arduino-and-attach-eletric-component) to see the necessary electronic components.
+     - Refer to Section [4: Uploading Sketch to Arduino and connecting electronic components](https://github.com/Federica-B/smart-dizzy-home/blob/main/README.md#4-upload-sketch-on-arduino-and-attach-electrical-component) to see the necessary electronic components.
   3. Suitable USB cable or optionally a 3.3V/5V level-shifter for GPIO pin connections
   4. Raspberry Pi running Ubuntu 20.04 OS or a Python 3.8 environment
   5. Local MQTT broker hosted in a Docker container or via alternative means
