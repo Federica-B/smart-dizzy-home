@@ -71,11 +71,23 @@ For every script in the directory [raspy_scripts](https://github.com/Federica-B/
 
 ### 4. Upload skatch on arduino and attach eletric component
 In the directory [arduino_code](https://github.com/Federica-B/smart-dizzy-home/tree/main/arduino_code) you can find all the sketch. You can also use only one Arduino; note that the polling is only implemented in the [thermostat](https://github.com/Federica-B/smart-dizzy-home/blob/main/arduino_code/smart_termostato/smart_termostato.ino), is best to test at leat with this sketch.
-The GPIO configuration of the actuation
+
+The eletronic components need are the following:
+1. Dimmer light configuration
+    - 1 led
+    - 330 Ohm resistor
+2. Shutter configuration
+    - Servo motor
+3. Thermostat configuration
+    - 7 segment 2 digit display
+    - 1 Thermistor
+
+The GPIO configuration of the 3 Arduino is shown in this following images.
+
 When the upload of the sketch is done attach the Arduino to the Raspberry via USB (optional if it is your case aliment it with the needed cable). Attach firt the Arduino with the sketch of the thermostat or manually modified the ttyACM port in the this [script](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_serial_full_duplex_arduino/serial_read_write_mqtt_clients.py) in the list ```telemetry_acm_arduino```.
 
 ### 5. Start the script
-I suggest starting the scripts on for terminal to see each script output in a organized way.
+I suggest starting the scripts one for terminal to see each script output in a organized way.
 ```
 cd smart-dizzy-home/raspy/raspy_scripts
 # start machine learning module
