@@ -33,10 +33,11 @@ In this architecture, the actuation logic is embedded within the microcontroller
 ## Requirements needed
 
   1. Arduino board (at least one)
-  2. Suitable USB cable or optionally a 3.3V/5V level-shifter for GPIO pin connections
-  3. Raspberry Pi running Ubuntu 20.04 OS or a Python 3.8 environment
-  4. Local MQTT broker hosted in a Docker container or via alternative means
-  5. Either a Thingsboard cloud license to use a cloud MQTT broker or the Community Edition version for local MQTT broker
+     - Refer to Section [4: Uploading Sketch to Arduino and connecting electronic components](https://github.com/Federica-B/smart-dizzy-home/edit/main/README.md#4-upload-skatch-on-arduino-and-attach-eletric-component) to see the necessary electronic components.
+  3. Suitable USB cable or optionally a 3.3V/5V level-shifter for GPIO pin connections
+  4. Raspberry Pi running Ubuntu 20.04 OS or a Python 3.8 environment
+  5. Local MQTT broker hosted in a Docker container or via alternative means
+  6. Either a Thingsboard cloud license to use a cloud MQTT broker or the Community Edition version for local MQTT broker
 
 For **Arduino**, you'll require the Arduino IDE to upload the sketch.
 In our scenario, the **Raspberry Pi** scripts are executed on an Ubuntu 20.04 server operating system, utilizing Python version 3.8. You can download the appropriate version of the Python library from the [requirements.txt](https://github.com/Federica-B/smart-dizzy-home/blob/main/requirements.txt) file.
@@ -68,11 +69,34 @@ For every script in the directory [raspy_scripts](https://github.com/Federica-B/
 
 &emsp; ```mosquitto```
 
-### 4. Start the script
-I suggest starting the scripts on for terminal to see each script output in a organized way.
-```cd smart-dizzy-home/raspy/raspy_scripts
- ```
+### 4. Upload skatch on arduino and attach eletric component
+In the directory [arduino_code](https://github.com/Federica-B/smart-dizzy-home/tree/main/arduino_code) you can find all the sketch. You can also use only one Arduino; note that the polling is only implemented in the [thermostat](https://github.com/Federica-B/smart-dizzy-home/blob/main/arduino_code/smart_termostato/smart_termostato.ino), is best to test at leat with this sketch.
+The GPIO configuration of the actuation
+When the upload of the sketch is done attach the Arduino to the Raspberry via USB (optional if it is your case aliment it with the needed cable). Attach firt the Arduino with the sketch of the thermostat or manually modified the ttyACM port in the this [script](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_serial_full_duplex_arduino/serial_read_write_mqtt_clients.py) in the list ```telemetry_acm_arduino```.
 
+### 5. Start the script
+I suggest starting the scripts on for terminal to see each script output in a organized way.
+```
+cd smart-dizzy-home/raspy/raspy_scripts
+# start machine learning module
+./ML_sub.py
+```
+Ctrl+Alt+T
+```
+# new terminal - start MQTT local - cloud bridge
+./mqtt_local_cloud_bridge/mqtt_local_cloud_bridge
+```
+Ctrl+Alt+T
+```
+# new terminal - start serial comunication module
+./raspy_serial_full_duplex_arduino/serial_read_write_mqtt_clients.py
+```
+Ctrl+Alt+T
+```
+# new terminal - start biometric simulation device
+./read_and_publish.py
+```
+<!-- new terminal from command line xterm -->
 ## Trubleshooting
 - If you encounter the problem of Line Feed (LF) after moving files from Windows to Unix you can use the folling command to resolve this issue:
 ```
