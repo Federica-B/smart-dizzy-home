@@ -9,13 +9,13 @@ Our project aims to develop an IoT architecture that dynamically adjusts to the 
 for the dashboard we used the cloud version of [Thingsboard](https://thingsboard.io/).
 
 ## Architecture structure
-A simulated biometric device transmits biometric data via Bluetooth to an Edge Device (in our case simulated by the Raspberry Pi). This data is then sent to an appropriate local topic _data/ecg-eda_ managed by the local MQTT broker. Upon publishing, this data is received by a module that performs Machine Learning inference. The results are then sent to another local topic _data/stress_. This data is then utilized by another module responsible for serial communication with the Arduino, which emulates devices capable of being actuated. In our scenario, these devices include a light, a shutter, and a thermostat. At the same time another module is responsable for performinf polling to request specific values from the actuator. This value is also sent to another local MQTT topic. In the end another module subscribes to all local topics, formats the data, and then sends it to the cloud MQTT broker. The data received from the cloud is displayed on the Thingsboard dashboard.
-
-We believe this architecture can be scalable across various settings, such as vehicles or offices, where different types of actuation can occur in response to stress. The key concept is that in each location, there's an Edge Device responsible for:
+We believe this architecture can be scalable across various settings, such as homes, vehicles or offices, where different types of actuation can occur in response to stress. The key concept is that in each location, there's an Edge Device responsible for:
 - locally performing the ML inference
 - sending the stress values to the microcontroller, which in turn carries out specific actuations
 - and bridges this collected data with the cloud.
 This data can be displayed and made visible to potential caregivers, thereby integrating it into the IoT data lifecycle.
+
+A simulated biometric device transmits biometric data via Bluetooth to an Edge Device (in our case simulated by the Raspberry Pi). This data is then sent to an appropriate local topic _data/ecg-eda_ managed by the local MQTT broker. Upon publishing, this data is received by a module that performs Machine Learning inference. The results are then sent to another local topic _data/stress_. This data is then utilized by another module responsible for serial communication with the Arduino, which emulates devices capable of being actuated. In our scenario, these devices include a light, a shutter, and a thermostat. At the same time another module is responsable for performinf polling to request specific values from the actuator. This value is also sent to another local MQTT topic. In the end another module subscribes to all local topics, formats the data, and then sends it to the cloud MQTT broker. The data received from the cloud is displayed on the Thingsboard dashboard.
 
 In this architecture, the actuation logic is embedded within the microcontroller's code. For example, it regulates the intensity of the dimmer light based on specific variable values stored within the code. The serial communication merely conveys predicted stress or non-stress data. We've designed the architecture to allow future adjustments in device logic. This can be achieved through functions that modify variable values stored in the EEPROM memory. Similarly, we've considered the potential for updating the machine learning model via a REST API. This involves regularly querying the cloud to check for any new models available for download and use.
 
@@ -45,3 +45,8 @@ To enable the dashboard functionality, you must possess a **Thingboard** cloud l
 dos2unix [options] [file-name]
 ```
 - If you do not possess three Arduinos, or if the Arduino models do not contain 'UNO' in their names, the bash script [start_simulation](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_scripts/start_simulation) will not function. You can start the singular scrips manually.
+
+## Future work
+- [ ] Implement functionality to modify Arduino's actuation logic via serial communication by deploying a function that allows rewriting values of variables used in the actuation process. - configuration function
+- [ ] Incorporate REST API functionality for model updates
+- [ ] Upgrade the serial communication protocol to a standard format
