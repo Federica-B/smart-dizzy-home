@@ -86,8 +86,17 @@ The GPIO configuration of the 3 Arduino is shown in this following images.
 
 After completing the sketch upload, connect the Arduino to the Raspberry Pi via USB. If necessary, provide power using the appropriate cable. Begin by connecting the Arduino with the thermostat sketch. Alternatively, manually modify update the variable list ```telemetry_acm_arduino``` with the appropriate ttyACM port in this [script](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_serial_full_duplex_arduino/serial_read_write_mqtt_clients.py).
 
-### 5. Start the script
-I suggest starting the scripts one for terminal to see each script output in a organized way.
+### 5. Check if the Arduinos are correctly connected
+Check if the Raspberry Pi detects the Arduino correctly by using the following command.
+```
+dsmeg | grep ttyACM
+ ```
+Alternatively, you can view all the attached USB devices and their information with the following command.
+  ```
+usb-devices
+ ```
+### 6. Start the script
+I recommend launching the scripts individually in separate terminals to observe each script's output in an organized manner.
 ```
 cd smart-dizzy-home/raspy/raspy_scripts
 # start machine learning module
