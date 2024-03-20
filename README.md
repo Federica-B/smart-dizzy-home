@@ -70,7 +70,7 @@ For every script in the directory [raspy_scripts](https://github.com/Federica-B/
 &emsp; ```mosquitto```
 
 ### 4. Upload skatch on arduino and attach eletric component
-In the directory [arduino_code](https://github.com/Federica-B/smart-dizzy-home/tree/main/arduino_code) you can find all the sketch. You can also use only one Arduino; note that the polling is only implemented in the [thermostat](https://github.com/Federica-B/smart-dizzy-home/blob/main/arduino_code/smart_termostato/smart_termostato.ino), is best to test at leat with this sketch.
+In the [arduino_code](https://github.com/Federica-B/smart-dizzy-home/tree/main/arduino_code) directory, you can find all the sketches. You can also use only one Arduino, however, please note that the polling feature is only implemented in the [thermostat](https://github.com/Federica-B/smart-dizzy-home/blob/main/arduino_code/smart_termostato/smart_termostato.ino). It is recommended to test at least with this sketch.
 
 The eletronic components need are the following:
 1. Dimmer light configuration
@@ -84,7 +84,7 @@ The eletronic components need are the following:
 
 The GPIO configuration of the 3 Arduino is shown in this following images.
 
-When the upload of the sketch is done attach the Arduino to the Raspberry via USB (optional if it is your case aliment it with the needed cable). Attach firt the Arduino with the sketch of the thermostat or manually modified the ttyACM port in the this [script](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_serial_full_duplex_arduino/serial_read_write_mqtt_clients.py) in the list ```telemetry_acm_arduino```.
+After completing the sketch upload, connect the Arduino to the Raspberry Pi via USB. If necessary, provide power using the appropriate cable. Begin by connecting the Arduino with the thermostat sketch. Alternatively, manually modify update the variable list ```telemetry_acm_arduino``` with the appropriate ttyACM port in this [script](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_serial_full_duplex_arduino/serial_read_write_mqtt_clients.py).
 
 ### 5. Start the script
 I suggest starting the scripts one for terminal to see each script output in a organized way.
