@@ -84,7 +84,12 @@ The eletronic components need are the following:
 
 The GPIO configuration of the 3 Arduino is shown in this following images.
 
-# IMAGE NEEDED
+<p float="center">
+  <img src="https://github.com/Federica-B/smart-dizzy-home/blob/main/imgs/arduino_led.png" width="200" />
+  <img src="https://github.com/Federica-B/smart-dizzy-home/blob/main/imgs/arduino_servo.png" width="400" /> 
+  <img src="https://github.com/Federica-B/smart-dizzy-home/blob/main/imgs/arduino_termo.png" width="400" />
+</p>
+
 
 After completing the sketch upload, connect the Arduino to the Raspberry Pi via USB. If necessary, provide power using the appropriate cable. Begin by connecting the Arduino with the thermostat sketch. Alternatively, manually modify update the variable list ```telemetry_acm_arduino``` with the appropriate ttyACM port in this [script](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_scripts/raspy_serial_full_duplex_arduino/serial_read_write_mqtt_clients.py).
 
