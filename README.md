@@ -28,7 +28,7 @@ This data can be displayed and made visible to potential caregivers, thereby int
 ### Current issues and future work
 In this architecture, the actuation logic is embedded within the microcontroller's code. For example, it regulates the intensity of the dimmer light based on specific variable values stored within the code. The serial communication merely conveys predicted stress or non-stress data. We've designed the architecture to allow future adjustments in device logic. This can be achieved through functions that modify variable values stored in the EEPROM memory. Similarly, we've considered the potential for updating the machine learning model via a REST API. This involves regularly querying the cloud to check for any new models available for download and use.
 
-<!-- ![alt text]() -->
+![alt text](https://github.com/Federica-B/smart-dizzy-home/blob/main/imgs/architecture.png) 
 
 ## Requirements needed
 
