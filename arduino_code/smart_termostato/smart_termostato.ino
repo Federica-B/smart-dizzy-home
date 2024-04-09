@@ -12,8 +12,19 @@ float temperaturaMassima;
 int sensorVal;
 int currentStateServo;
 
+
 // Set the LCD address to 0x27 or 0x3F according to your module
 LiquidCrystal_I2C lcd(0x27, 16, 2); // Change to your LCD I2C address and size
+
+void displayTempChanger(float temp){
+
+  lcd.setCursor(0, 0);
+  lcd.print("Temperatura:");
+  lcd.setCursor(0, 1);
+  lcd.print(temp);
+  lcd.print(" \xDF" "C");
+  //retun 0
+}
 
 void setup()
 {
@@ -27,13 +38,15 @@ void setup()
   digitalWrite(rele, LOW);
   //analogReference(EXTERNAL);
   currentStateServo = 0; // normal temperature
+
   lcd.init();
   lcd.backlight(); // Turn on the backlight
   lcd.print("Smart");
   lcd.setCursor(0, 1);
-  lcd.print("thermostat");
+  lcd.print("Thermostat");
   delay(3000);
-  //lcd.clear();
+  
+  lcd.clear();
 }
 
 void loop()
@@ -47,6 +60,10 @@ void loop()
   sensorVal /= 10; //esegue la media dei 10 valori letti
 
   tempGradi = ((sensorVal * 0.0032) - 0.50) / 0.01;
+  //initilize the temperature for the display
+  if (0 == currentStateServo){
+    temperaturaMassima = tempGradi;
+  }
   int futureStateServo;
   futureStateServo = currentStateServo;
 
@@ -59,30 +76,9 @@ void loop()
       Serial.println(tempGradi);
     }
 
-    //debugging purpose
-    if (data == 1)
-    {
-      digitalWrite(LED_BUILTIN, HIGH);
-    }
-    else
-    {
-      digitalWrite(LED_BUILTIN, LOW);
-    }
-
-    lcd.setCursor(0, 0);
-    lcd.print("Temperatura:");
-    lcd.setCursor(0, 1);
-    lcd.print(tempGradi);
-    lcd.print(" degrees");
-
     // CASE 0: stress non detected
     if (data == 0 && currentStateServo == 0)
     {
-      lcd.setCursor(0, 0);
-      lcd.print("Temperatura:");
-      lcd.setCursor(0, 1);
-      lcd.print(tempGradi);
-      lcd.print(" degrees");
       futureStateServo = 0;
       digitalWrite(ledBlu, LOW);
       digitalWrite(ledRosso, LOW);
@@ -94,21 +90,11 @@ void loop()
       if (tempGradi <= 16)
       {
         temperaturaMassima = tempGradi + 4;
-        lcd.clear();
-        lcd.print("Temp updated:");
-        lcd.setCursor(0, 1);
-        lcd.print(temperaturaMassima);
-        lcd.print(" degrees");
         digitalWrite(ledRosso, HIGH);
       }
       if (tempGradi > 16)
       {
         temperaturaMassima = tempGradi - 4;
-        lcd.clear();
-        lcd.print("Temp updated:");
-        lcd.setCursor(0, 1);
-        lcd.print(temperaturaMassima);
-        lcd.print(" degrees");
         digitalWrite(ledBlu, HIGH);
       }
       delay(500);
@@ -118,11 +104,6 @@ void loop()
     // CASE 2: stress detected & temp changed --> hold
     if (data == 1 && currentStateServo == 1)
     {
-      lcd.setCursor(0, 0);
-      lcd.print("Temp updated:");
-      lcd.setCursor(0, 1);
-      lcd.print(temperaturaMassima);
-      lcd.print(" degrees");
       futureStateServo = 1;
       digitalWrite(ledBlu, LOW);
       digitalWrite(ledRosso, LOW);
@@ -131,11 +112,6 @@ void loop()
     // CASE 3: stress non detected & temp changed --> set normal temp
     if (data == 0 && currentStateServo == 1)
     {
-      lcd.setCursor(0, 0);
-      lcd.print("Temperatura:");
-      lcd.setCursor(0, 1);
-      lcd.print(tempGradi);
-      lcd.print(" degrees");
       futureStateServo = 0;
       digitalWrite(ledBlu, LOW);
       digitalWrite(ledRosso, LOW);
@@ -144,4 +120,6 @@ void loop()
     //output
     currentStateServo = futureStateServo;
   }
+  //display
+  displayTempChanger(temperaturaMassima);
 }
