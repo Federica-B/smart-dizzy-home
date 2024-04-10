@@ -67,10 +67,11 @@ def requestId():
         if 0 != ser_arduino:
             print("Start serial communication with arduino! - Request ID")
             try:
-                #print(polling_command.encode())
-                ser_arduino.write(request)
-                acquired_data = ser_arduino.read_until('\x7d').decode('utf-8')
-
+                #until i recive MY data im going no where!!!  - Arduino UNO is slow
+                while len(acquired_data) < 2:
+                    ser_arduino.write(request)
+                    acquired_data = ser_arduino.read_until('\x7d').decode('utf-8')
+        
             except serial.SerialException as e:
                 print("Something went wrong when communicating with arduino serial! - NO DATA IS READ ON THE SERIAL PORT!!!!!!")
                 print(e)
