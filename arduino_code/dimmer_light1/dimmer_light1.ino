@@ -62,15 +62,15 @@ MsgStruct serialRead() {
   //uint8_t calculatedCRC = calcCRC16((const uint8_t *)dataForCRC.c_str(), dataForCRC.length(), 0x1021, 0x1D0F, 0x0000, false, false);
   crc.add((uint8_t*)dataForCRC.c_str(), dataForCRC.length());
   int calculatedCRC = crc.calc();
-  Serial.println(calculatedCRC);
+  // Serial.println(calculatedCRC);
   crc.restart();
 
   if (crcValue == calculatedCRC) {
     // Data is valid
-    Serial.print("Code: ");
-    Serial.println(code);
-    Serial.print("String: ");
-    Serial.println(stringData);
+    // Serial.print("Code: ");
+    // Serial.println(code);
+    // Serial.print("String: ");
+    // Serial.println(stringData);
 
     msg.serialCode = code;
     if (20 >= stringData.length()) {
@@ -85,7 +85,7 @@ MsgStruct serialRead() {
     // CRC error - mismatch
     msg.serialCode = 400;
     stringData.toCharArray(msg.stringValue, sizeof(msg.stringValue));
-    Serial.println("CRC Error");
+    // Serial.println("CRC Error");
   }
 
   return msg;
@@ -149,7 +149,6 @@ void loop() {
     //get id
     //need to send a msg with the id of the device
     responce = initializeMsg(273, ID_DEVICE);
-    serialSend(responce);
 
   }else if(786 == msg.serialCode){
     // get value
