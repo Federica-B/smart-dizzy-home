@@ -6,15 +6,25 @@ import threading
 import os
 
 
+from crc_package import crc
+# https://www.youtube.com/watch?v=s2bH-s4LI64 -> per crc submodule directory
+# devo cambiare la sintassi della comunicazione stato stress/no-stress-> {code,status,checksum}
+    # [x] installare CRC -> più o meno
+    # [] Fare una prima fase conoscitiva
+    # [] cambiare modo in cui invia, ovvero sinstassi e anche aspettare che riceva delle informazioni 
+    # [] conf file with all the codes
 
 # Setup MQTT broker - local
 broker_address = "127.0.0.1"
 port = 1883
 topic = "data/stress"
 topic_telemetry = "telemetry/temperature"
+DEVICE_ID = "raspy"
 
 telemetry_acm_arduino = ['/dev/ttyACM0']
+# TODO: condence them in a single dict
 arduino_list_serial = []
+arduino_id = {}
 simp =threading.Semaphore(1)
 
 def initilization_serial():
@@ -45,6 +55,34 @@ def initilization_serial():
         print("Correcly initilize the serial of "+ str(arduino_serial_acmtwo.name))
         arduino_list_serial.append(arduino_serial_acmtwo)
 
+def requestId():
+    code_request_id = 773
+    request = str(code_request_id)+ ","+DEVICE_ID
+    msg = bytes(request, 'utf-8')
+    crc_request = crc.crc_poly(msg, 16, 0x8005, crc=0xFFFF, ref_in=True, ref_out=True, xor_out=0xFFFF)
+
+    request = bytes(str('{') + request+','+ str(crc_request)+str('}'), 'utf-8')
+    for ser_arduino in arduino_list_serial:
+        acquired_data = ""
+        if 0 != ser_arduino:
+            print("Start serial communication with arduino! - Request ID")
+            try:
+                #print(polling_command.encode())
+                ser_arduino.write(request)
+                acquired_data = ser_arduino.read_until('\x7d').decode('utf-8')
+
+            except serial.SerialException as e:
+                print("Something went wrong when communicating with arduino serial! - NO DATA IS READ ON THE SERIAL PORT!!!!!!")
+                print(e)
+                return 0
+            except TypeError as e:
+                print("Other stuff went wrong in the arduino communication")
+                print(e)
+                return 0
+            else:
+                print("End correclty serial communication with arduino" + str(ser_arduino.name))
+            arduino_id[ser_arduino.name] = acquired_data.replace("{", "").replace("}","").split(",")[1]
+    
 
 def task_mqtt_stress():
     def on_connect(client, userdata, flags, rc):
@@ -149,11 +187,13 @@ def main():
 
     initilization_serial()
     print("Serial trovate: " +str(arduino_list_serial))
+    requestId()
+    print("Device ID found!"+ str(arduino_id))
 
-    t1 = threading.Thread(target=task_mqtt_stress, name='mqtt_task_stress')
-    t2 = threading.Thread(target=temperature_mqtt_task, name='temperature_mqtt_task')
-    t1.start()
-    t2.start()
+    # t1 = threading.Thread(target=task_mqtt_stress, name='mqtt_task_stress')
+    # t2 = threading.Thread(target=temperature_mqtt_task, name='temperature_mqtt_task')
+    # t1.start()
+    # t2.start()
 
 
 
