@@ -17,7 +17,7 @@ const char END_MARKER = '}';
 const char SEPARATOR = ',';
 
 char charArray[3];
-char ID_DEVICE[] = "light";
+char ID_DEVICE[] = "temperature";
 bool flag = false;
 
 typedef struct {
@@ -169,6 +169,8 @@ void loop() {
   }else if(400 == msg.serialCode || 401 == msg.serialCode){
     // some error occured - retry communication
     responce = initializeMsg(msg.serialCode, msg.stringValue);
+  }else{
+    responce = initializeMsg(403, msg.stringValue);
   }
 
   if (true == flag){
