@@ -53,6 +53,7 @@ MsgStruct serialRead() {
 
   //Read the CRC
   int crcValue = Serial.parseInt();
+  uint16_t castCRCvalue = (uint16_t) crcValue;
 
   while (Serial.read() != END_MARKER) {}
 
@@ -61,11 +62,11 @@ MsgStruct serialRead() {
   //calculate the CRC
   //uint8_t calculatedCRC = calcCRC16((const uint8_t *)dataForCRC.c_str(), dataForCRC.length(), 0x1021, 0x1D0F, 0x0000, false, false);
   crc.add((uint8_t*)dataForCRC.c_str(), dataForCRC.length());
-  int calculatedCRC = crc.calc();
-  // Serial.println(calculatedCRC);
+  uint16_t calculatedCRC = crc.calc();
+  //Serial.println(calculatedCRC);
   crc.restart();
 
-  if (crcValue == calculatedCRC) {
+  if (castCRCvalue == calculatedCRC) {
     // Data is valid
     // Serial.print("Code: ");
     // Serial.println(code);
@@ -94,7 +95,7 @@ MsgStruct serialRead() {
 void serialSend(MsgStruct msg){
   String dataForCRC = String(msg.serialCode) + "," + msg.stringValue; 
   crc.add((uint8_t*)dataForCRC.c_str(), dataForCRC.length());
-  int calculatedCRC = crc.calc();
+  uint16_t calculatedCRC = crc.calc();
   crc.restart();
   String message = String("{") + msg.serialCode + "," + String(msg.stringValue) + "," + String(calculatedCRC) + "}";
   Serial.print(message);
