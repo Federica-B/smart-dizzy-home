@@ -26,7 +26,7 @@ telemetry_acm_arduino = ['/dev/ttyACM0', '/dev/ttyACM1']
 arduino_list_serial = []
 arduino_id = {}
 STRESS_STATE = 0
-COUNTER_DEAD_LOCK = 0
+COUNTER_DEAD_LOCK = 4
     ## change from semaphore to lock because need binary
 simp = threading.Lock()
 
@@ -137,6 +137,7 @@ def serialRequest(code_request, message, ser_arduino) -> Tuple[str,bool]:
 
 def requestId() -> bool:
     global COUNTER_DEAD_LOCK
+    dl_counter = 0
     code_response_id = '273'
     for ser_arduino in arduino_list_serial:
         acquired_data = ""
@@ -145,12 +146,12 @@ def requestId() -> bool:
             acquired_data, control = settingID(ser_arduino)
             if control and acquired_data.replace("{", "").replace("}","").split(",")[0] == code_response_id:
                 arduino_id[ser_arduino.name] = acquired_data.replace("{", "").replace("}","").split(",")[1]
-            elif COUNTER_DEAD_LOCK < 4:
+            elif dl_counter < COUNTER_DEAD_LOCK:
                 settingID(ser_arduino)
-                COUNTER_DEAD_LOCK = COUNTER_DEAD_LOCK +1
+                dl_counter = dl_counter +1
             else:
                 print("Cannot confirm the correct ID because i did not recive a correct response.")
-                COUNTER_DEAD_LOCK = 0
+                dl_counter = 0
     return control
 
 def settingID(ser_arduino):
@@ -173,18 +174,19 @@ def requestSensing(ser_arduino) -> Tuple[str,bool]:
 
 def sendStress(ser_arduino) -> Tuple[str,bool]:
     global STRESS_STATE, COUNTER_DEAD_LOCK
+    dl_counter = 0
     code_set_stress = 883
     code_correct_stress = '283'
     control = True
     acquired_data, control = serialRequest(code_set_stress, STRESS_STATE,ser_arduino)
     if control and code_correct_stress == acquired_data.replace("{", "").replace("}","").split(",")[0] :
         print("Correcly set stress value")
-    elif COUNTER_DEAD_LOCK < 4:
+    elif dl_counter < COUNTER_DEAD_LOCK:
         sendStress(ser_arduino)
-        COUNTER_DEAD_LOCK = COUNTER_DEAD_LOCK +1
+        dl_counter = dl_counter +1
     else:
         print("Cannot confirm the correct actuation because i did not recive a correct response.")
-        COUNTER_DEAD_LOCK = 0
+        dl_counter = 0
     return acquired_data, control
 
 
