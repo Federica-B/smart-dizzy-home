@@ -3,9 +3,15 @@
 #include <CRC.h>
 
 const int ledPin = 10;  // the pin that the LED is attached to
-int brightness_dizzy = 0;
-int temp_brightness = 0;           //Variable to store data read from EEPROM.
-int brightness = 255;  // initialize value
+const unsigned int eeAddress = 0;
+
+unsigned brightness_dizzy = 0;
+unsigned temp_brightness = 0;           //Variable to store data read from EEPROM.
+unsigned brightness = 255;  // initialize value
+
+const unsigned int max_brightness = 255;
+const unsigned int min_brightness = 0;
+
 int state = 0;
 int future_state = 0;
 
@@ -17,7 +23,7 @@ const char END_MARKER = '}';
 const char SEPARATOR = ',';
 
 char charArray[3];
-char ID_DEVICE[] = "temperature";
+char ID_DEVICE[] = "light";
 bool flag = false;
 
 typedef struct {
@@ -63,15 +69,15 @@ MsgStruct serialRead() {
   //uint8_t calculatedCRC = calcCRC16((const uint8_t *)dataForCRC.c_str(), dataForCRC.length(), 0x1021, 0x1D0F, 0x0000, false, false);
   crc.add((uint8_t*)dataForCRC.c_str(), dataForCRC.length());
   uint16_t calculatedCRC = crc.calc();
-  //Serial.println(calculatedCRC);
   crc.restart();
+//  Serial.print("Code: ");
+//  Serial.println(code);
+//  Serial.print("String: ");
+//  Serial.println(stringData);
+//  Serial.println(calculatedCRC);
 
   if (castCRCvalue == calculatedCRC) {
     // Data is valid
-    // Serial.print("Code: ");
-    // Serial.println(code);
-    // Serial.print("String: ");
-    // Serial.println(stringData);
 
     msg.serialCode = code;
     if (20 >= stringData.length()) {
@@ -92,8 +98,8 @@ MsgStruct serialRead() {
   return msg;
 }
 
-void serialSend(MsgStruct msg){
-  String dataForCRC = String(msg.serialCode) + "," + msg.stringValue; 
+void serialSend(MsgStruct msg) {
+  String dataForCRC = String(msg.serialCode) + "," + msg.stringValue;
   crc.add((uint8_t*)dataForCRC.c_str(), dataForCRC.length());
   uint16_t calculatedCRC = crc.calc();
   crc.restart();
@@ -101,12 +107,19 @@ void serialSend(MsgStruct msg){
   Serial.print(message);
 }
 
+bool isNumber(const char* str) {
+  for (int i = 0; str[i] != '\0'; i++) {
+    if (str[i] < '0' || str[i] > '9') {
+      return false;
+    }
+  }
+  return true;
+}
 MsgStruct msg;
 MsgStruct responce;
 
 
 void setup() {
-  //int eeAddress = 0;
   //EEPROM.get(eeAddress, brightness_dizzy);
   brightness_dizzy = 20;  // maybe change value in eeprom lowering
   // initialize the serial communication
@@ -127,12 +140,12 @@ void setup() {
 void loop() {
   msg = initializeMsgEmpty();
 
-  if(future_state != state){
+  if (future_state != state) {
     state = future_state;
-    if(1 == state){
+    if (1 == state) {
       temp_brightness = brightness;
       brightness = brightness_dizzy;
-    }else{
+    } else {
       brightness = temp_brightness;
     }
   }
@@ -151,30 +164,48 @@ void loop() {
     //need to send a msg with the id of the device
     responce = initializeMsg(273, ID_DEVICE);
 
-  }else if(786 == msg.serialCode){
+  } else if (786 == msg.serialCode) {
     // get value
     itoa(brightness, charArray, 10);
     responce = initializeMsg(286, charArray);
 
-  }else if(883 == msg.serialCode){
+  } else if (883 == msg.serialCode) {
     // update state
-     if(strcmp(msg.stringValue, "1") == 0 || strcmp(msg.stringValue, "0") == 0){
-      future_state = atoi(msg.stringValue);
-      responce = initializeMsg(283, msg.stringValue);
-     }else{
+    if (strcmp(msg.stringValue, "1") == 0 || strcmp(msg.stringValue, "0") == 0) {
+      future_state = strtol(msg.stringValue, NULL, 10);
+      responce = initializeMsg(383, msg.stringValue);
+    } else {
       responce = initializeMsg(483, msg.stringValue);
-     }
-  }else if(869 == msg.serialCode){
-    responce = initializeMsg(269, msg.stringValue);
+    }
+  } else if (869 == msg.serialCode) {
+    // update conf value
+    if (isNumber(msg.stringValue))
+    {
+      unsigned int new_conf_value = strtoul(msg.stringValue, NULL, 10);
+      if ((min_brightness <= new_conf_value) && (max_brightness >= new_conf_value)) {
+        brightness_dizzy = new_conf_value;
+        responce = initializeMsg(383, msg.stringValue);
+        //EEPROM.write(eeAddress,brightness_dizzy)
+      } else {
+        responce = initializeMsg(483, msg.stringValue);
+      }
+    } else {
+      responce = initializeMsg(483, msg.stringValue);
+    }
 
-  }else if(400 == msg.serialCode || 401 == msg.serialCode){
+  } else if (769 == msg.serialCode) {
+    // get conf value
+    itoa(brightness_dizzy, charArray, 10);
+    responce = initializeMsg(369, charArray);
+
+  } else if (400 == msg.serialCode || 401 == msg.serialCode) {
     // some error occured - retry communication
     responce = initializeMsg(msg.serialCode, msg.stringValue);
-  }else{
+  } else {
     responce = initializeMsg(403, msg.stringValue);
   }
 
-  if (true == flag){
+  if (true == flag) {
     serialSend(responce);
     flag = false;
   }
