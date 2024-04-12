@@ -24,6 +24,7 @@ topic = "data/stress"
 topic_telemetry = "telemetry/"
 topic_action = "action/#"
 topic_get = "get/#"
+topic_response = "response/"
 DEVICE_ID = "raspy"
 
 telemetry_acm_arduino = ['/dev/ttyACM0', '/dev/ttyACM1']
@@ -217,7 +218,9 @@ def getConfValueS(ser_arduino)-> Tuple[str,bool]:
     control = True
     global DEVICE_ID
     acquired_data, control = serialRequest(cs.CODE_REQUEST_CONF_VALUE, DEVICE_ID,ser_arduino)
-    return acquired_data, control
+    if control:
+        sensing_val = acquired_data.replace("{", "").replace("}","").split(",")[1]
+    return sensing_val, control
 
 
 def task_mqtt_stress():
@@ -389,7 +392,11 @@ def get_conf_value_mqtt_task():
                 acquired_data,control= getConfValueS(ser_arduino)
                 simp.release()
                 if len(acquired_data)>1 and control:
-                    print("Value of conf: "+ str(acquired_data.replace("{", "").replace("}","").split(",")[1]))
+                    path = topic_response + arduino_id[ser_arduino.name]
+                    print("The data from port: "+ str(ser_arduino.name) + " is: " + str(acquired_data))
+                    client.publish(path, acquired_data)
+                    print("Data published on topic: "+ str(path))
+
 
     print("Task temperature mqtt assigned to thread: {}".format(threading.current_thread().name))
     print("ID of process running task 4: {}".format(os.getpid()))
