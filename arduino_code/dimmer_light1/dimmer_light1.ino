@@ -184,13 +184,13 @@ void loop() {
       unsigned int new_conf_value = strtoul(msg.stringValue, NULL, 10);
       if ((min_brightness <= new_conf_value) && (max_brightness >= new_conf_value)) {
         brightness_dizzy = new_conf_value;
-        responce = initializeMsg(383, msg.stringValue);
+        responce = initializeMsg(369, msg.stringValue);
         //EEPROM.write(eeAddress,brightness_dizzy)
       } else {
-        responce = initializeMsg(483, msg.stringValue);
+        responce = initializeMsg(469, msg.stringValue);
       }
     } else {
-      responce = initializeMsg(483, msg.stringValue);
+      responce = initializeMsg(469, msg.stringValue);
     }
 
   } else if (769 == msg.serialCode) {
