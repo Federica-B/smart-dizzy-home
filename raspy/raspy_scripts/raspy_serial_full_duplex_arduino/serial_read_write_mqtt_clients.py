@@ -7,6 +7,7 @@ import os
 from typing import Tuple
 
 from crc_package import crc
+from code_serial_comunication import codes_serial_comunication as cs
 # https://www.youtube.com/watch?v=s2bH-s4LI64 -> per crc submodule directory
 # devo cambiare la sintassi della comunicazione stato stress/no-stress-> {code,status,checksum}
     # [x] installare CRC -> più o meno
@@ -22,6 +23,7 @@ port = 1883
 topic = "data/stress"
 topic_telemetry = "telemetry/"
 topic_action = "action/#"
+topic_get = "get/#"
 DEVICE_ID = "raspy"
 
 telemetry_acm_arduino = ['/dev/ttyACM0', '/dev/ttyACM1']
@@ -69,7 +71,7 @@ def controlCRC(data_list) -> bool:
         print("Correct CRC!!")
         return True
     else:
-        print("Incorrect CRC -> calculated:" + str(crc_reponce) + " recived" + str(data_list[2]))
+        print("Incorrect CRC -> calculated:" + str(crc_reponce) + " recived: " + str(data_list[2]))
         return False
 
 def controlData(data) -> bool:
@@ -141,13 +143,13 @@ def serialRequest(code_request, message, ser_arduino) -> Tuple[str,bool]:
 def requestId() -> bool:
     global COUNTER_DEAD_LOCK
     dl_counter = 0
-    code_response_id = '273'
+    #code_response_id = '273'
     for ser_arduino in arduino_list_serial:
         acquired_data = ""
         if 0 != ser_arduino:
             print("Start serial communication with arduino! - Request ID")
             acquired_data, control = settingID(ser_arduino)
-            if control and acquired_data.replace("{", "").replace("}","").split(",")[0] == code_response_id:
+            if control and acquired_data.replace("{", "").replace("}","").split(",")[0] == cs.CORRECT_CODE_REQUEST_ID:
                 arduino_id[ser_arduino.name] = acquired_data.replace("{", "").replace("}","").split(",")[1]
             elif dl_counter < COUNTER_DEAD_LOCK:
                 settingID(ser_arduino)
@@ -158,19 +160,19 @@ def requestId() -> bool:
     return control
 
 def settingID(ser_arduino):
-    code_request_id = 773
+    #code_request_id = 773
     control = True
     global DEVICE_ID
-    acquired_data, control = serialRequest(code_request_id, DEVICE_ID,ser_arduino)
+    acquired_data, control = serialRequest(cs.CODE_REQUEST_ID, DEVICE_ID,ser_arduino)
     return acquired_data, control
 
 def requestSensing(ser_arduino) -> Tuple[str,bool]:
     global DEVICE_ID
-    code_request_sens = 786
+    #code_request_sens = 786
     control = True
     sensing_val = ""
     print("Start serial communication with arduino! - Request sensing value")
-    acquired_data, control = serialRequest(code_request_sens, DEVICE_ID,ser_arduino)
+    acquired_data, control = serialRequest(cs.CODE_REQUEST_SENS_VALUE, DEVICE_ID,ser_arduino)
     if control:
         sensing_val = acquired_data.replace("{", "").replace("}","").split(",")[1]
     return sensing_val, control
@@ -178,11 +180,11 @@ def requestSensing(ser_arduino) -> Tuple[str,bool]:
 def sendStress(ser_arduino,deadlock_count = 0) -> Tuple[str,bool]:
     global STRESS_STATE, COUNTER_DEAD_LOCK
     dl_counter = deadlock_count
-    code_set_stress = 883
-    code_correct_stress = '283'
+    #code_set_stress = 883
+    #code_correct_stress = '383'
     control = True
-    acquired_data, control = serialRequest(code_set_stress, STRESS_STATE,ser_arduino)
-    if control and code_correct_stress == acquired_data.replace("{", "").replace("}","").split(",")[0] :
+    acquired_data, control = serialRequest(cs.CODE_UPDATE_STATE, STRESS_STATE,ser_arduino)
+    if control and cs.CORRECT_CODE_UPDATE_STATE == acquired_data.replace("{", "").replace("}","").split(",")[0] :
         print("Correcly set stress value")
     elif dl_counter < COUNTER_DEAD_LOCK:
         dl_counter = dl_counter +1
@@ -195,11 +197,11 @@ def sendStress(ser_arduino,deadlock_count = 0) -> Tuple[str,bool]:
 def setNewConf(ser_arduino, msg, deadlock_count = 0) -> Tuple[str,bool]:
     global COUNTER_DEAD_LOCK
     dl_counter = deadlock_count
-    code_set_new_value = 869
-    code_correct_new_value = '269'
+    #code_set_new_value = 869
+    #code_correct_new_value = '369'
     control = True
-    acquired_data, control = serialRequest(code_set_new_value, msg,ser_arduino)
-    if control and code_correct_new_value == acquired_data.replace("{", "").replace("}","").split(",")[0] :
+    acquired_data, control = serialRequest(cs.CODE_UPDATE_CONF_VALUE, msg,ser_arduino)
+    if control and cs.CORRECT_CODE_UPDATE_CONF_VALUE == acquired_data.replace("{", "").replace("}","").split(",")[0] :
         print("Correcly set new conf value")
     elif dl_counter < COUNTER_DEAD_LOCK:
         dl_counter = dl_counter +1
@@ -207,6 +209,13 @@ def setNewConf(ser_arduino, msg, deadlock_count = 0) -> Tuple[str,bool]:
     else:
         print("Cannot confirm the correct new conf value because i did not recive a correct response.")
         dl_counter = 0
+    return acquired_data, control
+
+def getConfValueS(ser_arduino)-> Tuple[str,bool]:
+    #code_request_conf = 769
+    control = True
+    global DEVICE_ID
+    acquired_data, control = serialRequest(cs.CODE_REQUEST_CONF_VALUE, DEVICE_ID,ser_arduino)
     return acquired_data, control
 
 
@@ -232,8 +241,6 @@ def task_mqtt_stress():
         Invia i dati alla porta seriale per Arduino.
         """
         global STRESS_STATE
-        responce = ""
-        control = True
         if(data != STRESS_STATE):
             STRESS_STATE = data
             simp.acquire()
@@ -290,7 +297,7 @@ def sensing_mqtt_task():
                     
         time.sleep(10)
 
-def action_mqtt_task():
+def set_conf_value_mqtt_task():
 
     def on_connect(client, userdata, flags, rc):
         if rc == 0:
@@ -310,7 +317,11 @@ def action_mqtt_task():
         if msg_topic.replace('\'','').split('/')[-1] in list_id and msg_action.isdigit():
             value_msg = int(msg_action)
             if value_msg < 0: value_msg = value_msg*-1
-            port = [k for k,v in arduino_id.items() if v == msg_topic.replace('\'','').split('/')[-1]]
+            try:
+                port = [k for k,v in arduino_id.items() if v == msg_topic.replace('\'','').split('/')[-1]]
+            except TypeError as e:
+                print(e)
+
             if len(port) == 0:
                 print("No match found for topic and serial port")
             else:
@@ -331,13 +342,64 @@ def action_mqtt_task():
 
 
     print("Task temperature mqtt assigned to thread: {}".format(threading.current_thread().name))
-    print("ID of process running task 2: {}".format(os.getpid()))
+    print("ID of process running task 3: {}".format(os.getpid()))
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
     client.on_connect = on_connect
     client.connect(broker_address, port)
     client.on_message = on_message
     client.loop_forever()
 
+def get_conf_value_mqtt_task():
+    def on_connect(client, userdata, flags, rc):
+        if rc == 0:
+            print("Connected with result code " + str(rc))
+            client.subscribe(topic_get)
+        else:
+            print("Failed to connect, return conde "+ str(rc))
+
+
+    def on_message(client, userdata, msg):
+        msg_topic = str(msg._topic)
+        msg_get = msg.payload.decode()
+        print("New msg arrive from topic: "+ str(msg_topic)+ "!")
+        print("The value of the message is: " + str(msg_get))
+        list_id = []
+        port =[]
+        [list_id.append(v) for v in arduino_id.values()]
+        if msg_topic.replace('\'','').split('/')[-1] in list_id and msg_get.isdigit():
+            value_msg = int(msg_get)
+            if value_msg < 0: value_msg = value_msg*-1
+            try:
+                port = [k for k,v in arduino_id.items() if v == msg_topic.replace('\'','').split('/')[-1]]
+            except TypeError as e:
+                print(e)
+
+            if len(port) == 0:
+                print("No match found for topic and serial port")
+            else:
+                getConfValue(port[0])
+
+    def getConfValue(port):
+        acquired_data = ""
+        control = True
+        for ser_arduino in arduino_list_serial:
+            if ser_arduino != 0 and ser_arduino.name == port:
+                print("Start serial communication with arduino! - Get conf value")
+                simp.acquire()
+                acquired_data,control= getConfValueS(ser_arduino)
+                simp.release()
+                if len(acquired_data)>1 and control:
+                    print("Value of conf: "+ str(acquired_data.replace("{", "").replace("}","").split(",")[1]))
+
+    print("Task temperature mqtt assigned to thread: {}".format(threading.current_thread().name))
+    print("ID of process running task 4: {}".format(os.getpid()))
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1)
+    client.on_connect = on_connect
+    client.connect(broker_address, port)
+    client.on_message = on_message
+    client.loop_forever()
+
+    
 
 def main():
     print("ID of process running main program: {}".format(os.getpid()))
@@ -353,10 +415,12 @@ def main():
 
     t1 = threading.Thread(target=task_mqtt_stress, name='mqtt_task_stress')
     t2 = threading.Thread(target=sensing_mqtt_task, name='sensing_mqtt_task')
-    t3 = threading.Thread(target=action_mqtt_task, name = 'action_mqtt_task')
+    t3 = threading.Thread(target=set_conf_value_mqtt_task, name = 'set_conf_value_mqtt_task')
+    t4 = threading.Thread(target = get_conf_value_mqtt_task, name ='get_conf_value_mqtt_task')
     t1.start()
     t2.start()
     t3.start()
+    t4.start()
 
 
 
