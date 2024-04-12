@@ -143,6 +143,7 @@ def serialRequest(code_request, message, ser_arduino) -> Tuple[str,bool]:
 def requestId() -> bool:
     global COUNTER_DEAD_LOCK
     dl_counter = 0
+    control = False
     #code_response_id = '273'
     for ser_arduino in arduino_list_serial:
         acquired_data = ""
@@ -322,11 +323,10 @@ def set_conf_value_mqtt_task():
             except TypeError as e:
                 print(e)
 
-            if len(port) == 0:
-                print("No match found for topic and serial port")
-            else:
+            if len(port) > 0:
                 sendNewConfValue(port[0], value_msg)
-
+            else:
+                print("No match found for topic and serial port")
 
     def sendNewConfValue(port, value):
         acquired_data = ""
@@ -374,10 +374,10 @@ def get_conf_value_mqtt_task():
             except TypeError as e:
                 print(e)
 
-            if len(port) == 0:
-                print("No match found for topic and serial port")
-            else:
+            if len(port) > 0:
                 getConfValue(port[0])
+            else:
+                print("No match found for topic and serial port")
 
     def getConfValue(port):
         acquired_data = ""
