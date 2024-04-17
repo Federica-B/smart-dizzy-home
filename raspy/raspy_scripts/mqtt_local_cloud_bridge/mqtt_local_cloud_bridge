@@ -1,61 +1,115 @@
 #!/usr/bin/env python3
 
 import paho.mqtt.client as mqtt
+import json
 
 # Setup local MQTT
 l_broker_address = "127.0.0.1"
 l_port = 1883
 l_topic_ecg = "data/ecg-eda"
 l_topic_stress = "data/stress"
-l_topic_telemetry = "telemetry/temperature"
+l_topic_telemetry = "telemetry/+"
+l_topic_response = "response/#"
+l_topic_action = "action/"
+l_topic_get = "get/"
 
 # Setup cloud MQTT
-c_broker_address = "mqtt.thingsboard.cloud"
-c_port = 1883
-c_base_topic = "v1/devices/me/telemetry"
-c_token = "Nv0BnfBCxNsmvvI3QApU"
+# c_broker_address = "mqtt.thingsboard.cloud"
+# c_port = 1883
+c_broker_address = "127.0.0.1"
+c_port = 1884
+c_base_telemetry = "v1/devices/me/telemetry"
+c_sub_request = "v1/devices/me/rpc/request/+"
+c_pub_responce = "v1/devices/me/rpc/response/"
+
+c_token = "3p9pa65b6m08c3kl9e9q"
+
+
 
 def c_on_connect(client, userdata, flags, rc):
     if rc == 0:
-        print("Connected to MQTT Broker!")
+        print("Connected to cloud MQTT Broker!")
+        client.subscribe(c_sub_request)
     else:
         print(f"Failed to connect, return code {rc}")
 
 def c_on_publish(client, userdata, flags):
     print("published on cloud :P")
 
-c_client =  mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, "cloud-mqtt")
-c_client.on_connect = c_on_connect
-c_client.on_publish = c_on_publish
-
-c_client.username_pw_set(c_token)
-c_client.connect(host=c_broker_address,port=c_port,keepalive=60)
-
-
+def c_on_message(client, userdata, msg):
+    # print(msg.payload.decode())
+    # print(msg._topic)
+    number_request = msg._topic.decode()
+    action_dic = json.loads(msg.payload.decode())
+    message =str(action_dic["params"])
+    if str(action_dic["params"]) == "None":
+        message = str(0)
+    else:
+        message = str(int(action_dic["params"]))
+    if action_dic["method"] == "getLightValue":
+        topic = l_topic_get + "light/" +number_request.split("/")[-1]
+    if action_dic["method"] == "setLightValue":
+        topic = l_topic_action + "light/"+ number_request.split("/")[-1]
+    l_client.publish(topic, message)
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
-        print("Connected to MQTT Broker!")
-        client.subscribe("#")
+        print("Connected to local MQTT Broker!")
+        client.subscribe(l_topic_telemetry)
+        client.subscribe(l_topic_stress)
+        client.subscribe(l_topic_ecg)
+        client.subscribe(l_topic_response)
     else:
         print(f"Failed to connect, return code {rc}")
 
 def on_message(client, userdata, msg):
-    topic = msg.topic.split('/')[-1]
+    topic_str = msg._topic.decode()
+    topic_list = topic_str.split("/")
     message = msg.payload.decode()
-    concatenate_cloud_msg = '{'+ str(topic)+ ':'+ str(message) +'}'
-    print(concatenate_cloud_msg)
-    c_client.publish(c_base_topic,concatenate_cloud_msg)
+    concatenate_cloud_msg = '{'+ str(topic_list[-1])+ ':'+ str(message) +'}'
+    if 'response' in topic_list:
+        c_topic = c_pub_responce + topic_list[-1]
+        if 'get' in topic_list:
+            concatenate_cloud_msg = str(float(message))
+        elif 'set' in topic_list:
+            concatenate_cloud_msg = str(float(message))
+        else:
+            print("No correct concatenation!")
+    else:
+        c_topic = c_base_telemetry
+        concatenate_cloud_msg = '{'+ str(topic_list[-1])+ ':'+ str(message) +'}'
+
+    print("pub: topic -> "+str(c_topic)+ " | msg -> " +str(concatenate_cloud_msg))
+    c_client.publish(c_topic,concatenate_cloud_msg)
+
+def on_publish(client, userdata, flags):
+    print("published on local :P")
 
 
+## cloud
+c_client =  mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, "cloud-mqtt")
+c_client.on_connect = c_on_connect
+c_client.on_publish = c_on_publish
+c_client.on_message = c_on_message
+
+c_client.username_pw_set(c_token)
+c_client.connect(host=c_broker_address,port=c_port,keepalive=60)
+
+## local
+l_client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, "client-local")
+l_client.on_connect = on_connect
+l_client.connect(l_broker_address, l_port, 60)
+l_client.on_message = on_message
 
 def main():
-    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION1, "client-local")
-    client.on_connect = on_connect
-    client.connect(l_broker_address, l_port, 60)
-    client.on_message = on_message
 
-    client.loop_forever()
+    l_client.loop_start()
+    c_client.loop_start()
+
+    while True:
+        pass
+
+
 
 
 if __name__ == "__main__":
