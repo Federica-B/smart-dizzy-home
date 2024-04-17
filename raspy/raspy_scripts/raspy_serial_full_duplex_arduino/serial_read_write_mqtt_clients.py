@@ -8,14 +8,6 @@ from typing import Tuple
 
 from crc_package import crc
 from code_serial_comunication import codes_serial_comunication as cs
-# https://www.youtube.com/watch?v=s2bH-s4LI64 -> per crc submodule directory
-# devo cambiare la sintassi della comunicazione stato stress/no-stress-> {code,status,checksum}
-    # [x] installare CRC -> più o meno
-    # [x] Fare una prima fase conoscitiva
-    # [x] cambiare modo in cui invia, ovvero sinstassi e anche aspettare che riceva delle informazioni 
-    # [] conf file with all the codes
-    # [x] aggiungere thread per la configurazione
-    # [] add conf logic on arduino
 
 # Setup MQTT broker - local
 broker_address = "127.0.0.1"
@@ -211,7 +203,10 @@ def setNewConf(ser_arduino, msg, deadlock_count = 0) -> Tuple[str,bool]:
     else:
         print("Cannot confirm the correct new conf value because i did not recive a correct response.")
         dl_counter = 0
-    return acquired_data, control
+
+    if control:
+        set_value = acquired_data.replace("{", "").replace("}","").split(",")[1]
+    return set_value, control
 
 def getConfValueS(ser_arduino)-> Tuple[str,bool]:
     #code_request_conf = 769
@@ -318,20 +313,21 @@ def set_conf_value_mqtt_task():
         print("The value of the message is: " + str(msg_action))
         list_id = []
         [list_id.append(v) for v in arduino_id.values()]
-        if msg_topic.replace('\'','').split('/')[-1] in list_id and msg_action.isdigit():
+        msg_topic_list = msg_topic.replace('\'','').split('/')
+        if msg_topic_list[len(msg_topic_list)-2] in list_id and msg_action.isdigit():
             value_msg = int(msg_action)
             if value_msg < 0: value_msg = value_msg*-1
             try:
-                port = [k for k,v in arduino_id.items() if v == msg_topic.replace('\'','').split('/')[-1]]
+                port = [k for k,v in arduino_id.items() if v == msg_topic.replace('\'','').split('/')[-2]]
             except TypeError as e:
                 print(e)
 
             if len(port) > 0:
-                sendNewConfValue(port[0], value_msg)
+                sendNewConfValue(port[0], value_msg,msg_topic_list[-1])
             else:
                 print("No match found for topic and serial port")
 
-    def sendNewConfValue(port, value):
+    def sendNewConfValue(port, value, requestID):
         acquired_data = ""
         control = True
         for ser_arduino in arduino_list_serial:
@@ -341,7 +337,10 @@ def set_conf_value_mqtt_task():
                 acquired_data,control= setNewConf(ser_arduino, value)
                 simp.release()
                 if len(acquired_data)>1 and control:
-                    print("New data set to: "+ str(acquired_data.replace("{", "").replace("}","").split(",")[1]))
+                    print("New data set to: "+ str(acquired_data))
+                    path = topic_response + 'set/' + arduino_id[ser_arduino.name] + "/" + requestID
+                    client.publish(path, acquired_data)
+                    print("Data published on topic: "+ str(path))
 
 
     print("Task temperature mqtt assigned to thread: {}".format(threading.current_thread().name))
@@ -369,20 +368,21 @@ def get_conf_value_mqtt_task():
         list_id = []
         port =[]
         [list_id.append(v) for v in arduino_id.values()]
-        if msg_topic.replace('\'','').split('/')[-1] in list_id and msg_get.isdigit():
+        msg_topic_list = msg_topic.replace('\'','').split('/')
+        if msg_topic_list[len(msg_topic_list)-2] in list_id and msg_get.isdigit():
             value_msg = int(msg_get)
             if value_msg < 0: value_msg = value_msg*-1
             try:
-                port = [k for k,v in arduino_id.items() if v == msg_topic.replace('\'','').split('/')[-1]]
+                port = [k for k,v in arduino_id.items() if v == msg_topic_list[len(msg_topic_list)-2]]
             except TypeError as e:
                 print(e)
 
             if len(port) > 0:
-                getConfValue(port[0])
+                getConfValue(port[0],msg_topic_list[-1])
             else:
                 print("No match found for topic and serial port")
 
-    def getConfValue(port):
+    def getConfValue(port,requestID):
         acquired_data = ""
         control = True
         for ser_arduino in arduino_list_serial:
@@ -392,7 +392,7 @@ def get_conf_value_mqtt_task():
                 acquired_data,control= getConfValueS(ser_arduino)
                 simp.release()
                 if len(acquired_data)>1 and control:
-                    path = topic_response + arduino_id[ser_arduino.name]
+                    path = topic_response + 'get/' + arduino_id[ser_arduino.name] + "/" + requestID
                     print("The data from port: "+ str(ser_arduino.name) + " is: " + str(acquired_data))
                     client.publish(path, acquired_data)
                     print("Data published on topic: "+ str(path))
