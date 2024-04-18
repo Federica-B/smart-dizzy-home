@@ -314,7 +314,7 @@ def set_conf_value_mqtt_task():
         list_id = []
         [list_id.append(v) for v in arduino_id.values()]
         msg_topic_list = msg_topic.replace('\'','').split('/')
-        if msg_topic_list[len(msg_topic_list)-2] in list_id and msg_action.isdigit():
+        if msg_topic_list[-2] in list_id and msg_action.isdigit():
             value_msg = int(msg_action)
             if value_msg < 0: value_msg = value_msg*-1
             try:
@@ -391,11 +391,13 @@ def get_conf_value_mqtt_task():
                 simp.acquire()
                 acquired_data,control= getConfValueS(ser_arduino)
                 simp.release()
-                if len(acquired_data)>1 and control:
-                    path = topic_response + 'get/' + arduino_id[ser_arduino.name] + "/" + requestID
-                    print("The data from port: "+ str(ser_arduino.name) + " is: " + str(acquired_data))
-                    client.publish(path, acquired_data)
-                    print("Data published on topic: "+ str(path))
+                print(acquired_data, control)
+                if len(acquired_data)> 0:
+                    if acquired_data[0] != " " and control:
+                        path = topic_response + 'get/' + arduino_id[ser_arduino.name] + "/" + requestID
+                        print("The data from port: "+ str(ser_arduino.name) + " is: " + str(acquired_data))
+                        client.publish(path, acquired_data)
+                        print("Data published on topic: "+ str(path))
 
 
     print("Task temperature mqtt assigned to thread: {}".format(threading.current_thread().name))
@@ -421,11 +423,11 @@ def main():
         print("Some error occured during serial communication! - The ID found are the following:"+ str(arduino_id))
 
     t1 = threading.Thread(target=task_mqtt_stress, name='mqtt_task_stress')
-    t2 = threading.Thread(target=sensing_mqtt_task, name='sensing_mqtt_task')
+    #t2 = threading.Thread(target=sensing_mqtt_task, name='sensing_mqtt_task')
     t3 = threading.Thread(target=set_conf_value_mqtt_task, name = 'set_conf_value_mqtt_task')
     t4 = threading.Thread(target = get_conf_value_mqtt_task, name ='get_conf_value_mqtt_task')
     t1.start()
-    t2.start()
+    #t2.start()
     t3.start()
     t4.start()
 
