@@ -262,11 +262,11 @@ void loop() {
   if (future_state != state) {
     state = future_state;
     if (1 == state) {
-      if (tempGradi <= 16) {
+      if (tempGradi <= 20) {
         currentProjectedTemperature = tempGradi + tempStress;
         ledPin = ledRed;
       }
-      if (tempGradi > 16) {
+      if (tempGradi > 20) {
         currentProjectedTemperature = tempGradi - tempStress;
         ledPin = ledBlu;
       }
