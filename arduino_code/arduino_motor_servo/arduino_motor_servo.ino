@@ -22,7 +22,7 @@
 int pos;
 int temp_shutter;
 int target_shutter;
-int temp = 0;
+int temp;
 
 int state = 0;
 int future_state = 0;
@@ -39,7 +39,7 @@ const char START_MARKER = '{';
 const char END_MARKER = '}';
 const char SEPARATOR = ',';
 
-char charArray[3];
+char charArray[4];
 char ID_DEVICE[] = "shutter";
 bool flag = false;
 
@@ -164,8 +164,7 @@ void setup() {
   Serial.begin(9600);
   servo.attach(9, 9500, 2500);
 
-  state = 0; // windows open
-  target_shutter = START_POSE;
+  target_shutter = 100;
   servo.write(START_POSE); //shutter open
 }
 void loop() {
