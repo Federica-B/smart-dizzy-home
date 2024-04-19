@@ -37,8 +37,8 @@ def c_on_publish(client, userdata, flags):
     print("published on cloud :P")
 
 def c_on_message(client, userdata, msg):
-    # print(msg.payload.decode())
-    # print(msg._topic)
+    print(msg.payload.decode())
+    print(msg._topic)
     number_request = msg._topic.decode()
     action_dic = json.loads(msg.payload.decode())
     message =str(action_dic["params"])
@@ -50,6 +50,19 @@ def c_on_message(client, userdata, msg):
         topic = l_topic_get + "light/" +number_request.split("/")[-1]
     if action_dic["method"] == "setLightValue":
         topic = l_topic_action + "light/"+ number_request.split("/")[-1]
+    # if action_dic["method"] == "getGoalTemp":
+    #     topic = l_topic_get + "temperature/"+ number_request.split("/")[-1]
+    if action_dic["method"] == "getStateShutter":
+        topic = l_topic_get + "shutter/"+ number_request.split("/")[-1]
+    if action_dic["method"] == "setStateShutter":
+        topic = l_topic_action + "shutter/"+ number_request.split("/")[-1]
+    if action_dic["method"] == "getValueTemp":
+        topic = l_topic_get + "temperature/"+ number_request.split("/")[-1]
+    if action_dic["method"] == "setValueTemp":
+        topic = l_topic_action + "temperature/"+ number_request.split("/")[-1]
+    else:
+        pass
+
     l_client.publish(topic, message)
 
 def on_connect(client, userdata, flags, rc):
