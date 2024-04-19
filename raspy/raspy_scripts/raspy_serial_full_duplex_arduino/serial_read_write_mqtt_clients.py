@@ -25,6 +25,7 @@ arduino_list_serial = []
 arduino_id = {}
 STRESS_STATE = 0
 COUNTER_DEAD_LOCK = 2
+new_relative_temp = 20
     ## change from semaphore to lock because need binary
 simp = threading.Lock()
 
@@ -219,6 +220,35 @@ def getConfValueS(ser_arduino)-> Tuple[str,bool]:
 
 
 def task_mqtt_stress():
+
+    def generateGoalTempDashboar(messaggio):
+        global new_relative_temp
+        if new_relative_temp > 0:
+            print("New Goal conf value")
+            path = topic_telemetry + "tempGoal"
+            name = [k for k, v in arduino_id.items() if v == "temperature"]
+            if len(name) > 0:
+                for serial_ardu in arduino_list_serial:
+                    if serial_ardu != 0 and serial_ardu.name == name[0]:
+                        ser = serial_ardu
+                if ser:
+                    if messaggio == 1:
+                        simp.acquire()
+                        conf,control  = getConfValueS(ser)
+                        simp.release()
+                        if conf and control:
+                            conf = int(conf)
+                            if new_relative_temp > 20:
+                                tot = new_relative_temp - conf
+                            else:
+                                tot = new_relative_temp + conf
+                            client.publish(path, tot)
+                            print("Data published on topic: "+ str(path))
+                    elif messaggio == 0:
+                        tot = new_relative_temp
+                        client.publish(path, tot)
+                        print("Data published on topic: "+ str(path))
+
     def on_connect(client, userdata, flags, rc):
         if rc == 0:
             print("Connected with result code " + str(rc))
@@ -234,6 +264,7 @@ def task_mqtt_stress():
             send_data(int(messaggio_stress))
         else:
             print("Msg of stress not correct - not 0 or 1")
+        
 
     def send_data(data):
         """
@@ -248,6 +279,8 @@ def task_mqtt_stress():
                     print("Start serial communication with arduino! - Set stress value")
                     _,_ = sendStress(ser_arduino)
             simp.release()
+
+            generateGoalTempDashboar(int(STRESS_STATE))
         else:
             print("No change needed to the stress value")
 
@@ -277,7 +310,7 @@ def sensing_mqtt_task():
     client.connect(broker_address, port)
 
     ## data initilization for telemetry
-    acquire_data = ""
+    global new_relative_temp
     control = True
     while True:
         print("Start serial communication with arduino! - Data read")
@@ -293,6 +326,9 @@ def sensing_mqtt_task():
                 print("The data from port: "+ str(ser_arduino.name) + " is: " + str(acquired_data))
                 client.publish(path, acquired_data)
                 print("Data published on topic: "+ str(path))
+
+                if arduino_id[ser_arduino.name] == "temperature":
+                    new_relative_temp = int(acquired_data)
                     
         time.sleep(10)
 
@@ -423,11 +459,11 @@ def main():
         print("Some error occured during serial communication! - The ID found are the following:"+ str(arduino_id))
 
     t1 = threading.Thread(target=task_mqtt_stress, name='mqtt_task_stress')
-    #t2 = threading.Thread(target=sensing_mqtt_task, name='sensing_mqtt_task')
+    t2 = threading.Thread(target=sensing_mqtt_task, name='sensing_mqtt_task')
     t3 = threading.Thread(target=set_conf_value_mqtt_task, name = 'set_conf_value_mqtt_task')
     t4 = threading.Thread(target = get_conf_value_mqtt_task, name ='get_conf_value_mqtt_task')
     t1.start()
-    #t2.start()
+    t2.start()
     t3.start()
     t4.start()
 

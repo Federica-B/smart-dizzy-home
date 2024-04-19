@@ -5,6 +5,8 @@ devo cambiare la sintassi della comunicazione stato stress/no-stress-> {code,sta
 - [x] cambiare modo in cui invia, ovvero sinstassi e anche aspettare che riceva delle informazioni 
 - [x] conf file with all the codes
 - [x] aggiungere thread per la configurazione
-- [ ] add conf logic on arduino
-- [ ] add 
-- [ ] salvare il codice di request lungo tutta la pipeline del msg nel sistema o associarla in modo locale a seconda del FIFO? 
+- [x] add conf logic on arduino
+- [x] salvare il codice di request lungo tutta la pipeline del msg nel sistema o associarla in modo locale a seconda del FIFO? 
+- [x] aggiunta new temperature goal su nuovo topic
+- [x] modicare get del delta temperatura
+- [x] aggiunta delta shutter
