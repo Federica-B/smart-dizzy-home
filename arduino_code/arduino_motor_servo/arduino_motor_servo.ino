@@ -164,7 +164,7 @@ void setup() {
   Serial.begin(9600);
   servo.attach(9, 9500, 2500);
 
-  target_shutter = 100;
+  target_shutter = START_POSE;
   servo.write(START_POSE); //shutter open
 }
 void loop() {
