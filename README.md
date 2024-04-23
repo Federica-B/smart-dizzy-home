@@ -2,7 +2,7 @@
 ## Project aim
 Our project aims to develop an IoT architecture that dynamically adjusts to the user's stress levels by adapting the surrounding environment. We deploied the architecture on the following hardware:
 
-- 3 Arduino [our configuration: Arduino UNO mini, Arduino UNO R4 MINIMA, Arduino UNO R4 WIFI]
+- 3 Arduino [our configuration: Arduino UNO mini, Arduino UNO R4 MINIMA, Arduino UNO MEGA]
 - 1 Raspberry Pi model 4B
 - phone hotspot
 
@@ -80,8 +80,10 @@ The eletronic components need are the following:
 2. Shutter configuration
     - Servo motor
 3. Thermostat configuration
-    - 7 segment 2 digit display
+    - lcd display
     - 1 Thermistor
+    - 2 led (blue and red)
+    - 2x330 Ohm resistor
 
 The GPIO configuration of the 3 Arduino is shown in this following images.
 
