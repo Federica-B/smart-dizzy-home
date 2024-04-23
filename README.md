@@ -18,6 +18,8 @@ The key concept is that in each location, there's an Edge Device responsible for
 
 This data can be displayed and made visible to potential caregivers, thereby integrating it into the IoT data lifecycle. The cloud can introduce and enhance numerous additional features, yet this architecture is also capable of performing effectively as a standalone system.
 
+![alt text](https://github.com/Federica-B/smart-dizzy-home/blob/new_serial_refactor/imgs/architecture_new.png) 
+
 ### A more in-depth explanation of the stack
 1. A simulated **biometric device** transmits biometric data via Bluetooth to an Edge Device. This data is then sent to an appropriate local topic _data/ecg-eda_ managed by the local MQTT broker.
 2. Upon publishing, this data is received by a module that **performs Machine Learning inference**. The results are then sent to another local topic _data/stress_.
@@ -26,9 +28,8 @@ This data can be displayed and made visible to potential caregivers, thereby int
 5. In the end another module subscribes to all local topics, formats the data, and then **sends it to the cloud MQTT broker**. The data received from the cloud is displayed on the Thingsboard dashboard.
 
 ### Current issues and future work
-In this architecture, the actuation logic is embedded within the microcontroller's code. For example, it regulates the intensity of the dimmer light based on specific variable values stored within the code. The serial communication merely conveys predicted stress or non-stress data. We've designed the architecture to allow future adjustments in device logic. This can be achieved through functions that modify variable values stored in the EEPROM memory. Similarly, we've considered the potential for updating the machine learning model via a REST API. This involves regularly querying the cloud to check for any new models available for download and use.
+In this architecture, we've considered the potential for updating the machine learning model via a REST API. This involves regularly querying the cloud to check for any new models available for download and use.
 
-![alt text](https://github.com/Federica-B/smart-dizzy-home/blob/main/imgs/architecture.png) 
 
 ## Requirements needed
 
@@ -147,6 +148,6 @@ dos2unix [options] [file-name]
 - If you do not possess three Arduinos, or if the Arduino models do not contain 'UNO' in their names, the bash script [start_simulation](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_scripts/start_simulation) will not function. You can start the singular scripts manually.
 
 ## Future work
-- [ ] Implement functionality to modify Arduino's actuation logic via serial communication by deploying a function that allows rewriting values of variables used in the actuation process. - configuration function
+- [X] Implement functionality to modify Arduino's actuation logic via serial communication by deploying a function that allows rewriting values of variables used in the actuation process. - configuration function
 - [ ] Incorporate REST API functionality for model updates
-- [ ] Upgrade the serial communication protocol to a standard format
+- [X] Upgrade the serial communication protocol to a standard format
