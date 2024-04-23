@@ -44,7 +44,7 @@ For **Arduino**, you'll require the Arduino IDE to upload the sketch.
 In our scenario, the **Raspberry Pi** scripts are executed on an Ubuntu 20.04 server operating system, utilizing Python version 3.8. You can download the appropriate version of the Python library from the [requirements.txt](https://github.com/Federica-B/smart-dizzy-home/blob/main/requirements.txt) file.
 
 
-The serial communication between Arduino and Raspberry Pi is established through a **USB to USB-C cable**. If you decide to replicate and deploy this project, ensure that the cable you use can transmit data. Additionally, note that Arduino and Raspberry Pi operate at different voltage levels. For serial communication via GPIO pins, a 3.3V/5V level-shifter is required to safeguard the Raspberry Pi.
+The serial communication between Arduino and Raspberry Pi is established through a **USB to USB-C cable** (for the MEGA the cable is USB 2.0 type A/B). If you decide to replicate and deploy this project, ensure that the cable you use can transmit data. Additionally, note that Arduino and Raspberry Pi operate at different voltage levels. For serial communication via GPIO pins, a 3.3V/5V level-shifter is required to safeguard the Raspberry Pi.
 
 For MQTT to function locally, you need an **MQTT broker** operating within your local network. In our setup, we utilize a Docker container to host our local MQTT broker. If you wish to replicate this setup, you can follow this [instructions](https://github.com/sukesh-ak/setup-mosquitto-with-docker). If the broker is not hosted on the machine where you deploy the Raspberry Pi scripts, you will need to modify the scripts by changing the IP address accordingly. Additionally, if your broker has authentication requirements, you must also incorporate them into the scripts.
 
@@ -71,7 +71,7 @@ For every script in the directory [raspy_scripts](https://github.com/Federica-B/
 &emsp; ```mosquitto```
 
 ### 4. Upload sketch on Arduino and attach electrical component
-In the [arduino_code](https://github.com/Federica-B/smart-dizzy-home/tree/main/arduino_code) directory, you can find all the sketches. You can also use only one Arduino, however, please note that the polling feature is only implemented in the [thermostat](https://github.com/Federica-B/smart-dizzy-home/blob/main/arduino_code/smart_termostato/smart_termostato.ino). It is recommended to test at least with this sketch.
+In the [arduino_code](https://github.com/Federica-B/smart-dizzy-home/tree/main/arduino_code) directory, you can find all the sketches. You can also use only one Arduino.
 
 The eletronic components need are the following:
 1. Dimmer light configuration
@@ -147,7 +147,7 @@ To kill all python process launched you can use the following bash script.
 ```
 dos2unix [options] [file-name]
 ```
-- If you do not possess three Arduinos, or if the Arduino models do not contain 'UNO' in their names, the bash script [start_simulation](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_scripts/start_simulation) will not function. You can start the singular scripts manually.
+- If you do not possess three Arduinos, or if the Arduino models do not contain 'Arduino' in their names, the bash script [start_simulation](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_scripts/start_simulation) will not function. You can start the singular scripts manually.
 
 ## Future work
 - [X] Implement functionality to modify Arduino's actuation logic via serial communication by deploying a function that allows rewriting values of variables used in the actuation process. - configuration function
