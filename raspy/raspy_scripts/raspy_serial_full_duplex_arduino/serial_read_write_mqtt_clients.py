@@ -238,7 +238,7 @@ def task_mqtt_stress():
                         simp.release()
                         if conf and control:
                             conf = int(conf)
-                            if new_relative_temp > 20:
+                            if new_relative_temp > 22:
                                 tot = new_relative_temp - conf
                             else:
                                 tot = new_relative_temp + conf
