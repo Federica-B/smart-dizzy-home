@@ -2,7 +2,7 @@
 ## Project aim
 Our project aims to develop an IoT architecture that dynamically adjusts to the user's stress levels by adapting the surrounding environment. We deploied the architecture on the following hardware:
 
-- 3 Arduino [our configuration: Arduino UNO mini, Arduino UNO R4 MINIMA, Arduino UNO R4 WIFI]
+- 3 Arduino [our configuration: Arduino UNO mini, Arduino UNO R4 MINIMA, Arduino UNO MEGA]
 - 1 Raspberry Pi model 4B
 - phone hotspot
 
@@ -18,6 +18,8 @@ The key concept is that in each location, there's an Edge Device responsible for
 
 This data can be displayed and made visible to potential caregivers, thereby integrating it into the IoT data lifecycle. The cloud can introduce and enhance numerous additional features, yet this architecture is also capable of performing effectively as a standalone system.
 
+![alt text](https://github.com/Federica-B/smart-dizzy-home/blob/new_serial_refactor/imgs/architecture_new.png) 
+
 ### A more in-depth explanation of the stack
 1. A simulated **biometric device** transmits biometric data via Bluetooth to an Edge Device. This data is then sent to an appropriate local topic _data/ecg-eda_ managed by the local MQTT broker.
 2. Upon publishing, this data is received by a module that **performs Machine Learning inference**. The results are then sent to another local topic _data/stress_.
@@ -26,9 +28,8 @@ This data can be displayed and made visible to potential caregivers, thereby int
 5. In the end another module subscribes to all local topics, formats the data, and then **sends it to the cloud MQTT broker**. The data received from the cloud is displayed on the Thingsboard dashboard.
 
 ### Current issues and future work
-In this architecture, the actuation logic is embedded within the microcontroller's code. For example, it regulates the intensity of the dimmer light based on specific variable values stored within the code. The serial communication merely conveys predicted stress or non-stress data. We've designed the architecture to allow future adjustments in device logic. This can be achieved through functions that modify variable values stored in the EEPROM memory. Similarly, we've considered the potential for updating the machine learning model via a REST API. This involves regularly querying the cloud to check for any new models available for download and use.
+In this architecture, we've considered the potential for updating the machine learning model via a REST API. This involves regularly querying the cloud to check for any new models available for download and use.
 
-![alt text](https://github.com/Federica-B/smart-dizzy-home/blob/main/imgs/architecture.png) 
 
 ## Requirements needed
 
@@ -43,7 +44,7 @@ For **Arduino**, you'll require the Arduino IDE to upload the sketch.
 In our scenario, the **Raspberry Pi** scripts are executed on an Ubuntu 20.04 server operating system, utilizing Python version 3.8. You can download the appropriate version of the Python library from the [requirements.txt](https://github.com/Federica-B/smart-dizzy-home/blob/main/requirements.txt) file.
 
 
-The serial communication between Arduino and Raspberry Pi is established through a **USB to USB-C cable**. If you decide to replicate and deploy this project, ensure that the cable you use can transmit data. Additionally, note that Arduino and Raspberry Pi operate at different voltage levels. For serial communication via GPIO pins, a 3.3V/5V level-shifter is required to safeguard the Raspberry Pi.
+The serial communication between Arduino and Raspberry Pi is established through a **USB to USB-C cable** (for the MEGA the cable is USB 2.0 type A/B). If you decide to replicate and deploy this project, ensure that the cable you use can transmit data. Additionally, note that Arduino and Raspberry Pi operate at different voltage levels. For serial communication via GPIO pins, a 3.3V/5V level-shifter is required to safeguard the Raspberry Pi.
 
 For MQTT to function locally, you need an **MQTT broker** operating within your local network. In our setup, we utilize a Docker container to host our local MQTT broker. If you wish to replicate this setup, you can follow this [instructions](https://github.com/sukesh-ak/setup-mosquitto-with-docker). If the broker is not hosted on the machine where you deploy the Raspberry Pi scripts, you will need to modify the scripts by changing the IP address accordingly. Additionally, if your broker has authentication requirements, you must also incorporate them into the scripts.
 
@@ -70,7 +71,7 @@ For every script in the directory [raspy_scripts](https://github.com/Federica-B/
 &emsp; ```mosquitto```
 
 ### 4. Upload sketch on Arduino and attach electrical component
-In the [arduino_code](https://github.com/Federica-B/smart-dizzy-home/tree/main/arduino_code) directory, you can find all the sketches. You can also use only one Arduino, however, please note that the polling feature is only implemented in the [thermostat](https://github.com/Federica-B/smart-dizzy-home/blob/main/arduino_code/smart_termostato/smart_termostato.ino). It is recommended to test at least with this sketch.
+In the [arduino_code](https://github.com/Federica-B/smart-dizzy-home/tree/main/arduino_code) directory, you can find all the sketches. You can also use only one Arduino.
 
 The eletronic components need are the following:
 1. Dimmer light configuration
@@ -79,8 +80,10 @@ The eletronic components need are the following:
 2. Shutter configuration
     - Servo motor
 3. Thermostat configuration
-    - 7 segment 2 digit display
+    - lcd display
     - 1 Thermistor
+    - 2 led (blue and red)
+    - 2x330 Ohm resistor
 
 The GPIO configuration of the 3 Arduino is shown in this following images.
 
@@ -144,9 +147,9 @@ To kill all python process launched you can use the following bash script.
 ```
 dos2unix [options] [file-name]
 ```
-- If you do not possess three Arduinos, or if the Arduino models do not contain 'UNO' in their names, the bash script [start_simulation](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_scripts/start_simulation) will not function. You can start the singular scripts manually.
+- If you do not possess three Arduinos, or if the Arduino models do not contain 'Arduino' in their names, the bash script [start_simulation](https://github.com/Federica-B/smart-dizzy-home/blob/main/raspy/raspy_scripts/start_simulation) will not function. You can start the singular scripts manually.
 
 ## Future work
-- [ ] Implement functionality to modify Arduino's actuation logic via serial communication by deploying a function that allows rewriting values of variables used in the actuation process. - configuration function
+- [X] Implement functionality to modify Arduino's actuation logic via serial communication by deploying a function that allows rewriting values of variables used in the actuation process. - configuration function
 - [ ] Incorporate REST API functionality for model updates
-- [ ] Upgrade the serial communication protocol to a standard format
+- [X] Upgrade the serial communication protocol to a standard format
